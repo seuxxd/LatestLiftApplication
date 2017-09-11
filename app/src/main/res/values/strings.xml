@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">LatestLiftApplication</string>
     <string name="scan">扫描条形码</string>
+    <string name="username_hint">请输入用户名</string>
+    <string name="password_hint">请输入密码</string>
+    <string name="login_title">登录界面</string>
+    <string name="login_button">Login</string>
+    <string name="welcome_title">WELCOME</string>
 </resources>

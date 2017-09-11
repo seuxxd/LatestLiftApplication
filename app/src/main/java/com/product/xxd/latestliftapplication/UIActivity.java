@@ -15,10 +15,15 @@ import zxing.activity.CaptureActivity;
 
 public class UIActivity extends AppCompatActivity {
 
+//    调试用的标记
     private static final String TAG = "UIActivity";
+//    上传时的设备编号
+    private String mLiftInfo ;
 
+//    扫描二维码的按键
     @BindView(R.id.scan_button)
     Button mButtonScanCode;
+//    二维码扫描按钮的事件响应
     @OnClick(R.id.scan_button)
     public void scan_button(){
         Log.i(TAG, "scanCode: " + "pressed");
@@ -44,10 +49,11 @@ public class UIActivity extends AppCompatActivity {
 //            这个是扫描二维码的Activity处理部分
             case ActivityResultCode.SCAN_REQUEST_CODE:
                 if (resultCode == ActivityResultCode.SCAN_RESULT_OK){
-                    Log.i(TAG, "onActivityResult: " + data.getStringExtra("result"));
+                    Toast.makeText(this, "扫码成功", Toast.LENGTH_SHORT).show();
+                    mLiftInfo = data.getStringExtra("result");
                 }
                 else if (resultCode == ActivityResultCode.SCAN_RESULT_FAILED){
-                    Log.i(TAG, "onActivityResult: " + "scanfailed");
+                    Toast.makeText(this, "扫码失败，请重试", Toast.LENGTH_SHORT).show();
                 }
                 break;
             default:

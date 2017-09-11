@@ -2,11 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.product.xxd.latestliftapplication">
 
-    <!--权限设置-->
-    <!--Zxing库是一个二维码扫描库，需要相机的使用权限-->
+    <!-- 权限设置 -->
+    <!-- Zxing库是一个二维码扫描库，需要相机的使用权限 -->
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
-
 
     <application
         android:allowBackup="true"
@@ -15,14 +14,17 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".UIActivity">
+
+        </activity>
+        <!-- 这个是扫描条形码的activity，不需要其他的任何设置，声明一下即可 -->
+        <activity android:name="zxing.activity.CaptureActivity"/>
+        <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <!--这个是扫描条形码的activity，不需要其他的任何设置，声明一下即可-->
-        <activity android:name="zxing.activity.CaptureActivity"/>
     </application>
 
 </manifest>
