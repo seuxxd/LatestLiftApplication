@@ -1,12 +1,10 @@
 package com.product.xxd.latestliftapplication;
 
-import android.os.PersistableBundle;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -16,12 +14,27 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
+import org.json.JSONObject;
+
+import java.io.IOException;
+
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
+import internet.InternetConnectionUtil;
+import internet.LoginService;
+import internet.User;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private static final String TAG = "LoginActivity";
 //    用户名的管理布局
     @BindView(R.id.textinputuser)
     TextInputLayout mUsernameTextInput;
@@ -41,8 +54,50 @@ public class LoginActivity extends AppCompatActivity {
     @BindView(R.id.toolbar_title)
     TextView mToolbarTitle;
 //    字符串的绑定
+//    toolbar显示的字符串
     @BindString(R.string.login_title)
     String mTitleString;
+//    当用户名为空时显示的字符串
+    @BindString(R.string.empty_username)
+    String mEmptyUsername;
+//    当密码为空时显示的字符串
+    @BindString(R.string.empty_password)
+    String mEmptyPassword;
+
+
+//    按键的事件响应
+    @OnClick(R.id.login_button)
+    public void login(){
+        Retrofit mRetrofit = InternetConnectionUtil.getRetrofit();
+        LoginService loginService = mRetrofit.create(LoginService.class);
+        Log.i(TAG, "login:");
+        String username = mUsername.getText().toString();
+        String password = mPassword.getText().toString();
+        if (username.trim().equals("")){
+            mUsernameTextInput.setError(mEmptyUsername);
+        }
+        else if (password.trim().equals("")){
+            mPasswordTextInput.setError(mEmptyPassword);
+        }
+        else {
+            Call<ResponseBody> call = loginService.getLoginToken(new User(username,password));
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    try {
+                        Log.i(TAG, "onResponse: " + response.body().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                }
+            });
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,20 +108,6 @@ public class LoginActivity extends AppCompatActivity {
         mPasswordTextInput.setHint("Password");
         mToolbar.setTitle("");
         mToolbarTitle.setText(mTitleString);
-        /*mToolbar.inflateMenu(R.menu.login_menu);
-        mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()){
-                    case R.id.app_usage:
-                        Toast.makeText(LoginActivity.this, "用法", Toast.LENGTH_SHORT).show();
-                        break;
-                    default:
-                        break;
-                }
-                return true;
-            }
-        });*/
         setSupportActionBar(mToolbar);
     }
 
