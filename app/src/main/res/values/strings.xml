@@ -6,4 +6,6 @@
     <string name="login_title">登录界面</string>
     <string name="login_button">Login</string>
     <string name="welcome_title">WELCOME</string>
+    <string name="app_usage">使用说明</string>
+    <string name="app_mail">联系邮箱</string>
 </resources>
