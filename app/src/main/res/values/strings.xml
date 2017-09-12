@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">LatestLiftApplication</string>
     <string name="scan">扫描条形码</string>
+    <string name="ble">连接蓝牙</string>
     <string name="username_hint">请输入用户名</string>
     <string name="password_hint">请输入密码</string>
     <string name="login_title">登录界面</string>
@@ -10,4 +11,6 @@
     <string name="app_mail">联系邮箱</string>
     <string name="empty_username">用户名不能为空</string>
     <string name="empty_password">密码不能为空</string>
+    <string name="task_id">获取任务单</string>
+    <string name="taskid_title">可用任务单列表</string>
 </resources>

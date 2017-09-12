@@ -1,15 +1,13 @@
 package com.product.xxd.latestliftapplication;
 
+import android.content.Intent;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,7 +15,6 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 
-import java.io.IOException;
 
 import butterknife.BindString;
 import butterknife.BindView;
@@ -85,8 +82,12 @@ public class LoginActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     try {
-                        Log.i(TAG, "onResponse: " + response.body().string());
-                    } catch (IOException e) {
+                        String str = response.body().string();
+                        Log.i(TAG, "onResponse: " + str);
+                        if (str != null){
+                            testResponse(str);
+                        }
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -127,5 +128,37 @@ public class LoginActivity extends AppCompatActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+//    检测服务器返回数据
+    private void testResponse(String response){
+        try{
+            JSONObject mResponse = new JSONObject(response);
+            String mMessage      = mResponse.getString("message");
+            if (mMessage.equals("登陆成功!")){
+                String mData         = mResponse.getString("data");
+                JSONObject mDataJson = new JSONObject(mData);
+                String mToken        = mDataJson.getString("token");
+                Intent intent = new Intent(LoginActivity.this,UIActivity.class);
+                intent.putExtra("token",mToken);
+                startActivity(intent);
+            }
+            else {
+                Log.i(TAG, "testResponse: " + mMessage);
+                switch (mMessage){
+                    case "密码错误!":
+                        mUsernameTextInput.setError("");
+                        mPasswordTextInput.setError("password error");
+                        break;
+                    case "查询不到此用户！":
+                        mUsernameTextInput.setError("username not found");
+                        mPasswordTextInput.setError("");
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }
