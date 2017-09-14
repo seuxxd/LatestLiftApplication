@@ -10,5 +10,8 @@
     <style name="OverFlowToolbar" parent="Widget.AppCompat.Light.PopupMenu.Overflow">
         <item name="overlapAnchor">false</item>
     </style>
+    <style name="ToolbarTitleColor" parent="AppTheme">
+        <item name="colorPrimary">@color/result_points</item>
+    </style>
 
 </resources>

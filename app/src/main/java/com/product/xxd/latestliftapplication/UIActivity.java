@@ -1,6 +1,7 @@
 package com.product.xxd.latestliftapplication;
 
 import android.content.Intent;
+import android.support.annotation.BinderThread;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.Inflater;
 
+import ble.BluetoothController;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -43,6 +45,8 @@ public class UIActivity extends AppCompatActivity {
     private String mLiftInfo ;
 //    用于获取taskId的令牌
     private String mToken;
+//    蓝牙控制器
+    private BluetoothController mController = BluetoothController.getInstance();
 
 //    扫描二维码的按键
     @BindView(R.id.scan_button)
@@ -109,6 +113,44 @@ public class UIActivity extends AppCompatActivity {
                 mdialog.dismiss();
             }
         });
+    }
+
+//    打开BLE的按键
+    @BindView(R.id.ble_button)
+    Button mBLEButton;
+    @OnClick(R.id.ble_button)
+    public void connectBLE(){
+        Intent intent = new Intent(this,BLEActivity.class);
+        startActivity(intent);
+    }
+//    绑定初始化12个按键
+    @BindView(R.id.accelarate)
+    Button mAccelarateButton;
+    @BindView(R.id.palstance)
+    Button mPalstanseButton;
+    @BindView(R.id.angle)
+    Button mAngle;
+    @BindView(R.id.voice)
+    Button mVoice;
+    @BindView(R.id.distance)
+    Button mDistanceButton;
+    @BindView(R.id.params_all)
+    Button mAllParamsButton;
+    @BindView(R.id.runnint_status)
+    Button mRunningStatusButton;
+    @BindView(R.id.test_connection)
+    Button mTestConnectionButton;
+    @BindView(R.id.error_info)
+    Button mErrorInfoButton;
+    @BindView(R.id.reset_data)
+    Button mResetDataButton;
+    @BindView(R.id.upload)
+    Button mUploadButton;
+    @BindView(R.id.history)
+    Button mHistoryButton;
+//    发送指令到蓝牙模块
+    private void sendCommand(String command){
+        mController.write(command);
     }
 
     @Override

@@ -8,6 +8,9 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
     <!--使用Retrofit进行网络连接，需要使用网络权限-->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!--连接蓝牙需要的权限-->
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
 
     <application
         android:allowBackup="true"
@@ -20,6 +23,7 @@
         </activity>
         <!-- 这个是扫描条形码的activity，不需要其他的任何设置，声明一下即可 -->
         <activity android:name="zxing.activity.CaptureActivity"/>
+        <!--登录界面，也是launcher界面-->
         <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -27,6 +31,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!--蓝牙扫描Activity-->
+        <activity android:name=".BLEActivity"/>
+        <!--开启蓝牙BLE服务-->
+        <service
+            android:name="ble.BLEService"
+            android:enabled="true"/>
     </application>
 
 </manifest>
