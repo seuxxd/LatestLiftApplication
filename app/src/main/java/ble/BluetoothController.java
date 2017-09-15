@@ -17,9 +17,14 @@ import android.util.Log;
 
 
 import com.product.xxd.latestliftapplication.BLEActivity;
+import com.product.xxd.latestliftapplication.UIActivity;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.Iterator;
 import java.util.List;
+
+import static ble.ConvertUtils.dexToString;
 
 
 public class BluetoothController {
@@ -202,18 +207,50 @@ public class BluetoothController {
 //            因为通信协议默认发送20个字节，所以判断是否数据还没有接收完
 //            如果小于20，说明本次接收完毕，可以发送
             if (length < 20){
-                sendResult(mResult);
-                mResult = "";
+                Log.i(TAG, "onCharacteristicChanged: " + mResult);
+                if (UIActivity.mIsChangedToString){
+                    mResult = dexToString(mResult);
+//                    sendResult(mResult);
+                    EventBus.getDefault().post(mResult);
+                    mResult = "";
+                    Log.i(TAG, "onCharacteristicChanged: true");
+                }
+                else if (!UIActivity.mIsChangedToString){
+//                    sendResult(mResult);
+                    EventBus.getDefault().post(mResult);
+                    mResult = "";
+                    Log.i(TAG, "onCharacteristicChanged: false");
+                }
+
             }
 //            如果等于20，还需要分类讨论一下
             else if (length == 20){
                 if (mReadOnce.endsWith("}")){
-                    sendResult(mResult);
-                    mResult = "";
+                    if (UIActivity.mIsChangedToString){
+                        mResult = dexToString(mResult);
+//                        sendResult(mResult);
+                        EventBus.getDefault().post(mResult);
+                        mResult = "";
+                    }
+                    else {
+//                        sendResult(mResult);
+                        EventBus.getDefault().post(mResult);
+                        mResult = "";
+                    }
+
                 }
                 else if (content[19] == 'd'){
-                    sendResult(mResult);
-                    mResult = "";
+                    if (UIActivity.mIsChangedToString){
+                        mResult = dexToString(mResult);
+//                        sendResult(mResult);
+                        EventBus.getDefault().post(mResult);
+                        mResult = "";
+                    }
+                    else {
+//                        sendResult(mResult);
+                        EventBus.getDefault().post(mResult);
+                        mResult = "";
+                    }
                 }
             }
         }
@@ -341,4 +378,5 @@ public class BluetoothController {
             BluetoothController.this.serviceHandler.sendMessage(msg);
         }
     }
+
 }

@@ -9,6 +9,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
+import org.greenrobot.eventbus.EventBus;
+
 public class BLEService extends Service
 {
 	BluetoothController bleCtrl;
@@ -42,6 +44,8 @@ public class BLEService extends Service
 				intentDevice.putExtras(bundle1);
 				sendBroadcast(intentDevice);
 				Log.i(TAG, "handleMessage: " + "connect");
+                EventBus.getDefault().post("connect");
+                bleCtrl.stopScanBLE();
 //				sendBroadcast(new Intent(ConstantUtils.ACTION_BLUETOOTH_CONNECTED));
 				break;
 

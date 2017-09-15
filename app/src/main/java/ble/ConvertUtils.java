@@ -30,4 +30,20 @@ public class ConvertUtils {
 		}
 		return sb.toString();
 	}
+	//    十六进制转换成字符串
+	public static String dexToString(String str)
+	{
+		String mSample = "0123456789ABCDEF";
+		str = str.toUpperCase();
+		char[] dex = str.toCharArray();
+		byte[] result = new byte[dex.length / 2];
+		int count;
+		for (int i = 0 ; i < result.length ; i ++)
+		{
+			count = mSample.indexOf(dex[2 * i]) * 16;
+			count += mSample.indexOf(dex[2 * i + 1]);
+			result[i] = (byte)(count & 0xff);
+		}
+		return new String(result);
+	}
 }
