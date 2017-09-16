@@ -17,6 +17,7 @@ public class BLEService extends Service
 	String readString = "";
 	public BLEBinder mBinder = new BLEBinder();
 	private static final String TAG = "BLEService";
+    public static boolean mIsConnected = false;
 
 	@Override
 	public IBinder onBind(Intent arg0)
@@ -45,6 +46,7 @@ public class BLEService extends Service
 				sendBroadcast(intentDevice);
 				Log.i(TAG, "handleMessage: " + "connect");
                 EventBus.getDefault().post("connect");
+                mIsConnected = true;
                 bleCtrl.stopScanBLE();
 //				sendBroadcast(new Intent(ConstantUtils.ACTION_BLUETOOTH_CONNECTED));
 				break;

@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.product.xxd.latestliftapplication.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -21,9 +22,31 @@ import util.ErrorInfo;
 
 public class ErrorAdapter extends BaseAdapter {
     private Context mContext;
+    private static List<Integer> mErrorInfoNumberValue;
+    private static List<String> mErrorInfoStringValue;
     private List<String> mErrorListKey = ErrorInfo.getmErrorChineseInfo();
-    public ErrorAdapter(Context context) {
+    public ErrorAdapter(Context context , List<Integer> list) {
         mContext = context;
+        mErrorInfoNumberValue = list;
+        mErrorInfoStringValue = new ArrayList<>();
+        for (int i = 0 ; i < mErrorInfoNumberValue.size() ; i ++){
+            switch (mErrorInfoNumberValue.get(i)){
+                case 0:
+                    mErrorInfoStringValue.add("正常");
+                    break;
+                case 1:
+                    mErrorInfoStringValue.add("发生");
+                    break;
+                case 2:
+                    mErrorInfoStringValue.add("数据错误");
+                    break;
+                case 3:
+                    mErrorInfoStringValue.add("无数据");
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 //    ViewHolder类
     static class ViewHolder{
@@ -65,6 +88,7 @@ public class ErrorAdapter extends BaseAdapter {
             mViewHolder = (ViewHolder) convertView.getTag();
         }
         mViewHolder.mErrorInfoKey.setText(mErrorListKey.get(position));
+        mViewHolder.mErrorInfoValue.setText(mErrorInfoStringValue.get(position));
 
         return convertView;
     }

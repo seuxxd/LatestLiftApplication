@@ -25,7 +25,9 @@ public class StatusAdapter extends BaseAdapter {
 //    这个是运行信息的key
     private List<String> mStatusListKey = RunningStatus.getStatusChineseList();
 //    这个是运行信息对应的value值，用数字来表示
-    private static List<Integer> mStatusListNumberValue = new ArrayList<>();
+    private static List<Integer> mStatusListNumberValue;
+//    运行时对应的value值，字符串表示
+    private static List<String> mStatusListStringValue;
 
     public static List<Integer> getStatusListNumberValue() {
         return mStatusListNumberValue;
@@ -37,9 +39,28 @@ public class StatusAdapter extends BaseAdapter {
 
 //    Context信息
     private Context mContext;
+//    value信息
 
-    public StatusAdapter(Context context) {
+    public StatusAdapter(Context context , List<Integer> list) {
         mContext = context;
+        mStatusListNumberValue = list;
+        mStatusListStringValue = new ArrayList<>();
+        for (int i = 0 ; i < mStatusListNumberValue.size() ; i ++){
+            switch (mStatusListNumberValue.get(i)){
+                case 0:
+                    mStatusListStringValue.add(RunningStatus.getZeroRunningInfoValue().get(i));
+                    break;
+                case 1:
+                    mStatusListStringValue.add(RunningStatus.getOneRunningInfoValue().get(i));
+                    break;
+                case 2:
+                    mStatusListStringValue.add("数据错误");
+                    break;
+                case 3:
+                    mStatusListStringValue.add("无数据");
+                    break;
+            }
+        }
     }
 
     //    ViewHolder提高ListView效率
@@ -80,6 +101,8 @@ public class StatusAdapter extends BaseAdapter {
             convertView.setTag(mHolder);
         }
         mHolder.mInfoKey.setText(mStatusListKey.get(position));
+//        接下来把数字转换成对应的字符串,方便客户端阅读
+        mHolder.mInfoValue.setText(mStatusListStringValue.get(position));
 
         return convertView;
     }

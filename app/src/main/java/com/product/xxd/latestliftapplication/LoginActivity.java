@@ -16,6 +16,8 @@ import android.widget.Toast;
 import org.json.JSONObject;
 
 
+import ble.BLEService;
+import ble.BluetoothController;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -159,6 +161,15 @@ public class LoginActivity extends AppCompatActivity {
             }
         }catch (Exception e){
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (BLEService.mIsConnected){
+            BluetoothController.disconnect();
+            BLEService.mIsConnected = false;
         }
     }
 }

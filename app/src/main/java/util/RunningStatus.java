@@ -45,11 +45,45 @@ public class RunningStatus {
 
         return mStatusList;
     }
+//    显示在客户端的value字符串对于0
+    public static List<String> getZeroRunningInfoValue(){
+        List<String> mList = new ArrayList<>();
+        mList.add("断开");
+        mList.add("断开");
+        mList.add("断开");
+        mList.add("检修");
+        mList.add("打开");
+        mList.add("停止");
+        mList.add("停止");
+        mList.add("未平层");
+        mList.add("正常");
+        mList.add("正常");
+        mList.add("正常");
+
+        return mList;
+    }
+//   显示在客户端的value字符串对于1
+    public static List<String> getOneRunningInfoValue(){
+        List<String> mList = new ArrayList<>();
+        mList.add("吸合");
+        mList.add("运行");
+        mList.add("正常");
+        mList.add("正常");
+        mList.add("关闭");
+        mList.add("上行");
+        mList.add("下行");
+        mList.add("平层");
+        mList.add("动作");
+        mList.add("动作");
+        mList.add("动作");
+        return mList;
+    }
+
 //    上传到服务器的运行信息value数字表示
     public static List<Integer> getmRunningInfoNumberValue(){
         List<Integer> mList = new ArrayList<>();
         for (int i = 0 ; i < 11 ; i ++)
-            mList.add(0);
+            mList.add(3);
         return mList;
     }
 }

@@ -207,50 +207,18 @@ public class BluetoothController {
 //            因为通信协议默认发送20个字节，所以判断是否数据还没有接收完
 //            如果小于20，说明本次接收完毕，可以发送
             if (length < 20){
-                Log.i(TAG, "onCharacteristicChanged: " + mResult);
-                if (UIActivity.mIsChangedToString){
-                    mResult = dexToString(mResult);
-//                    sendResult(mResult);
-                    EventBus.getDefault().post(mResult);
-                    mResult = "";
-                    Log.i(TAG, "onCharacteristicChanged: true");
-                }
-                else if (!UIActivity.mIsChangedToString){
-//                    sendResult(mResult);
-                    EventBus.getDefault().post(mResult);
-                    mResult = "";
-                    Log.i(TAG, "onCharacteristicChanged: false");
-                }
-
+                EventBus.getDefault().post(mResult);
+                mResult = "";
             }
 //            如果等于20，还需要分类讨论一下
             else if (length == 20){
                 if (mReadOnce.endsWith("}")){
-                    if (UIActivity.mIsChangedToString){
-                        mResult = dexToString(mResult);
-//                        sendResult(mResult);
-                        EventBus.getDefault().post(mResult);
-                        mResult = "";
-                    }
-                    else {
-//                        sendResult(mResult);
-                        EventBus.getDefault().post(mResult);
-                        mResult = "";
-                    }
-
+                    EventBus.getDefault().post(mResult);
+                    mResult = "";
                 }
                 else if (content[19] == 'd'){
-                    if (UIActivity.mIsChangedToString){
-                        mResult = dexToString(mResult);
-//                        sendResult(mResult);
-                        EventBus.getDefault().post(mResult);
-                        mResult = "";
-                    }
-                    else {
-//                        sendResult(mResult);
-                        EventBus.getDefault().post(mResult);
-                        mResult = "";
-                    }
+                    EventBus.getDefault().post(mResult);
+                    mResult = "";
                 }
             }
         }

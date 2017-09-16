@@ -115,7 +115,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <Button
-                android:id="@+id/runnint_status"
+                android:id="@+id/running_status"
                 android:text="@string/running_status"
                 android:layout_margin="4dp"
                 android:layout_weight="1"

@@ -32,6 +32,7 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import eventbusobject.BLEConnInfo;
 import internet.InternetConnectionUtil;
 import internet.TaskIdService;
 import internet.UploadService;
@@ -41,6 +42,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import util.ActivityConstantCode;
+import util.ErrorInfo;
+import util.RunningStatus;
 import zxing.activity.CaptureActivity;
 
 public class UIActivity extends AppCompatActivity {
@@ -56,9 +59,13 @@ public class UIActivity extends AppCompatActivity {
 //    判断连接/断开蓝牙
     private boolean mIsConnected = false;
 //    判断蓝牙数据解析方式，true是转换成字符串，false是保持字节流行时
-    public static boolean mIsChangedToString = true;
+    public boolean mIsChangedToString;
 //    判断当前按键类别
     private int mWhichButton = 0;
+//    运行信息的value
+    private List<Integer> mRunningInfoNumberValue;
+//    故障信息的value
+    private List<Integer> mErrorInfoNumberValue;
 //    打开蓝牙连接的字符串
     @BindString(R.string.ble)
     String mConnect;
@@ -140,8 +147,6 @@ public class UIActivity extends AppCompatActivity {
         if (!mIsConnected){
             Intent intent = new Intent(this,BLEActivity.class);
             startActivity(intent);
-            mIsConnected = true;
-            mBLEButton.setText(mDisconnect);
         }
         else {
             mIsConnected = false;
@@ -149,6 +154,13 @@ public class UIActivity extends AppCompatActivity {
             mBLEButton.setText(mConnect);
         }
 
+    }
+//    更智能的判断蓝牙连接状况
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onConnect(BLEConnInfo info){
+        if (info.mIsConnected)
+            mIsConnected = true;
+        mBLEButton.setText(mDisconnect);
     }
 
 //    数据展示界面
@@ -213,14 +225,13 @@ public class UIActivity extends AppCompatActivity {
         sendCommand("SDataE");
     }
 //    获取运行状态
-    @BindView(R.id.runnint_status)
+    @BindView(R.id.running_status)
     Button mRunningStatusButton;
-    @OnClick(R.id.runnint_status)
+    @OnClick(R.id.running_status)
     public void setRunningStatusButton(){
         mIsChangedToString = false;
         mWhichButton = ActivityConstantCode.RUNNING_STATUS_BUTTON_PRESSED;
         sendCommand("SstatusE");
-        showRunningStatusDialog();
     }
 //    测试连接状态
     @BindView(R.id.test_connection)
@@ -239,7 +250,6 @@ public class UIActivity extends AppCompatActivity {
         mIsChangedToString = false;
         mWhichButton = ActivityConstantCode.RUNNING_ERROR_BUTTON_PRESSED;
         sendCommand("SalarmE");
-        showErrorDialog();
     }
 //    重置数据
     @BindView(R.id.reset_data)
@@ -263,10 +273,12 @@ public class UIActivity extends AppCompatActivity {
 //    获取历史信息
     @BindView(R.id.history)
     Button mHistoryButton;
+    @OnClick(R.id.history)
+    public void setHistoryButton(){
+
+    }
 //    发送指令到蓝牙模块
     private void sendCommand(String command){
-        mIsChangedToString = true;
-        mWhichButton = ActivityConstantCode.HISTORY_BUTTON_PRESED;
         mController.write(command);
         Log.i(TAG, "sendCommand: ");
     }
@@ -306,14 +318,39 @@ public class UIActivity extends AppCompatActivity {
 //    处理蓝牙返回的字符串
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(String s){
-//        Log.i(TAG, "onEvent: " + "onEvent" + " " + s);
+//        这个因为是在别的控制类里面发出的字符串，所以不需要进行判断和转换
         if (s.equals("connect")){
             Toast.makeText(this, "connected", Toast.LENGTH_SHORT).show();
+            EventBus.getDefault().post(new BLEConnInfo(true));
         }
+//        这里进行蓝牙传回的字符串判断和解析
+//        对于故障和运行，使用字节
+//        其他进行转换，变成字符串
         else {
-            if (s.equals(ConvertUtils.dexToString("00")))
+            Log.i(TAG, "onEvent: " + mWhichButton);
+            if (s.equals("00"))
                 mShowArea.setText("no data");
-            else mShowArea.setText(s);
+            else if (!mIsChangedToString){
+//                这里就是处理运行和错误数据的部分
+                switch (mWhichButton){
+                    case ActivityConstantCode.RUNNING_STATUS_BUTTON_PRESSED:
+                        statusInfoConvert(s);
+                        showRunningStatusDialog();
+                        break;
+                    case ActivityConstantCode.RUNNING_ERROR_BUTTON_PRESSED:
+                        errorInfoConvert(s);
+                        showErrorDialog();
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+            else{
+//                这里简单显示相关数据
+                mShowArea.setText(ConvertUtils.dexToString(s));
+            }
+
         }
 
     }
@@ -325,9 +362,21 @@ public class UIActivity extends AppCompatActivity {
                 .create();
 //        ListView用ButterKnife会出错……不得不用find
         ListView mRunningInfoListView = (ListView) view.findViewById(R.id.running_info_listview);
-        mRunningInfoListView.setAdapter(new StatusAdapter(this));
+        mRunningInfoListView.setAdapter(new StatusAdapter(this,mRunningInfoNumberValue));
         dialog.show();
     }
+
+    //    运行数据处理
+    private void statusInfoConvert(String s){
+        mRunningInfoNumberValue = RunningStatus.getmRunningInfoNumberValue();
+        for (int i = 29; i < 49; i += 2){
+            int result = ((int) s.charAt(i)) - 48;
+            mRunningInfoNumberValue.set((i - 29) / 2 , result);
+            Log.i(TAG, "statusInfoConvert: " + result);
+        }
+    }
+
+
 //    点击获取故障信息的对话框处理
     private void showErrorDialog(){
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_error,null);
@@ -335,9 +384,19 @@ public class UIActivity extends AppCompatActivity {
                 .setView(view)
                 .create();
         ListView mErrorListView = (ListView) view.findViewById(R.id.error_info_listview);
-        mErrorListView.setAdapter(new ErrorAdapter(this));
+        mErrorListView.setAdapter(new ErrorAdapter(this,mErrorInfoNumberValue));
         dialog.show();
     }
+//    运行故障信息处理
+    private void errorInfoConvert(String s){
+        mErrorInfoNumberValue = ErrorInfo.getmErrorNumberValue();
+        for (int i = 21 ; i < 41 ; i += 2){
+            int temp = ((int) s.charAt(i)) - 48;
+            mErrorInfoNumberValue.set((i - 21) / 2,temp);
+            Log.i(TAG, "errorInfoConvert: " + temp);
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
