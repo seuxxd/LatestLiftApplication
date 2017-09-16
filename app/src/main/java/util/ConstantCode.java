@@ -4,7 +4,7 @@ package util;
  * Created by SEUXXD on 2017-09-11.
  */
 
-public class ActivityConstantCode {
+public class ConstantCode {
 //    打开扫描二维码Activity的请求参数
     public static final int SCAN_REQUEST_CODE     = 1;
 //    扫描二维码成功的结果参数
@@ -41,4 +41,14 @@ public class ActivityConstantCode {
     public static final int UPLOAD_BUTTON_PRESSED     = 21;
 //    点击了获取历史数据按键
     public static final int HISTORY_BUTTON_PRESED     = 22;
+
+
+//    错误信息对话框 取消
+    public static final int ERROR_INFO_CANCEL_BUTTON_PRESSED = 31;
+//    错误信息对话框 确认
+    public static final int ERROR_INFO_SURE_BUTTON_PRESSED   = 32;
+//    运行信息对话框 取消
+    public static final int RUNNING_INFO_CANCEL_BUTTON_PRESSED   = 33;
+//    运行信息对话框 确认
+    public static final int RUNNING_INFO_SURE_BUTTON_PRESSED   = 34;
 }

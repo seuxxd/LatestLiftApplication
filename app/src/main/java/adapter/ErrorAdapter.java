@@ -14,6 +14,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import util.ErrorInfo;
 
 /**
@@ -23,12 +24,37 @@ import util.ErrorInfo;
 public class ErrorAdapter extends BaseAdapter {
     private Context mContext;
     private static List<Integer> mErrorInfoNumberValue;
+
     private static List<String> mErrorInfoStringValue;
+
+    private static List<Integer> mErrorInfoNumberValueOrigin;
+
+    private static List<String> mErrorInfoStringValueOrigin;
+
+    public static List<Integer> getmErrorInfoNumberValueOrigin() {
+        return mErrorInfoNumberValueOrigin;
+    }
+
+    public static List<String> getmErrorInfoStringValueOrigin() {
+        return mErrorInfoStringValueOrigin;
+    }
+
+    public static List<Integer> getmErrorInfoNumberValue() {
+        return mErrorInfoNumberValue;
+    }
+
+    public static List<String> getmErrorInfoStringValue() {
+        return mErrorInfoStringValue;
+    }
+
+    private final String[] mErrorContent = {"正常","发生","数据错误","无数据"};
     private List<String> mErrorListKey = ErrorInfo.getmErrorChineseInfo();
     public ErrorAdapter(Context context , List<Integer> list) {
         mContext = context;
         mErrorInfoNumberValue = list;
         mErrorInfoStringValue = new ArrayList<>();
+        mErrorInfoNumberValueOrigin = new ArrayList<>();
+        mErrorInfoStringValueOrigin = new ArrayList<>();
         for (int i = 0 ; i < mErrorInfoNumberValue.size() ; i ++){
             switch (mErrorInfoNumberValue.get(i)){
                 case 0:
@@ -46,6 +72,10 @@ public class ErrorAdapter extends BaseAdapter {
                 default:
                     break;
             }
+        }
+        for (int i = 0 ; i < mErrorListKey.size() ; i ++){
+            mErrorInfoNumberValueOrigin.add(list.get(i));
+            mErrorInfoStringValueOrigin.add(mErrorInfoStringValue.get(i));
         }
     }
 //    ViewHolder类
@@ -76,8 +106,8 @@ public class ErrorAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder mViewHolder;
+    public View getView(final int position, View convertView, ViewGroup parent) {
+        final ViewHolder mViewHolder;
         if (convertView == null){
             convertView = LayoutInflater.from(mContext).inflate(R.layout.errorlist_content,null);
             mViewHolder = new ViewHolder(convertView);
@@ -89,7 +119,17 @@ public class ErrorAdapter extends BaseAdapter {
         }
         mViewHolder.mErrorInfoKey.setText(mErrorListKey.get(position));
         mViewHolder.mErrorInfoValue.setText(mErrorInfoStringValue.get(position));
-
+//        为了使用position这个参数，不得不使用该方法
+        mViewHolder.mErrorInfoValue.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int temp = mErrorInfoNumberValue.get(position);
+                temp = (temp + 1) % 4;
+                mErrorInfoNumberValue.set(position,temp);
+                mErrorInfoStringValue.set(position,mErrorContent[temp]);
+                mViewHolder.mErrorInfoValue.setText(mErrorContent[temp]);
+            }
+        });
         return convertView;
     }
 }

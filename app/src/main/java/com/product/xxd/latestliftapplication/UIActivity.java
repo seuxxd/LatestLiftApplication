@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,13 +25,16 @@ import java.util.List;
 
 import adapter.ErrorAdapter;
 import adapter.StatusAdapter;
+import ble.BLEService;
 import ble.BluetoothController;
+import ble.ConstantUtils;
 import ble.ConvertUtils;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import eventbusobject.BLEConnInfo;
+import eventbusobject.DialogChange;
 import internet.InternetConnectionUtil;
 import internet.TaskIdService;
 import internet.UploadService;
@@ -41,7 +43,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import util.ActivityConstantCode;
+import util.ConstantCode;
 import util.ErrorInfo;
 import util.RunningStatus;
 import zxing.activity.CaptureActivity;
@@ -64,8 +66,13 @@ public class UIActivity extends AppCompatActivity {
     private int mWhichButton = 0;
 //    运行信息的value
     private List<Integer> mRunningInfoNumberValue;
+//    运行信息的value字符串表示
+    private List<String> mRunningInfoStringValue;
 //    故障信息的value
     private List<Integer> mErrorInfoNumberValue;
+//    故障信息的value字符串表示
+    private List<String> mErrorInfoStringValue;
+
 //    打开蓝牙连接的字符串
     @BindString(R.string.ble)
     String mConnect;
@@ -80,7 +87,7 @@ public class UIActivity extends AppCompatActivity {
     public void scan(){
         Log.i(TAG, "scanCode: " + "pressed");
         Intent intent = new Intent(this, CaptureActivity.class);
-        startActivityForResult(intent, ActivityConstantCode.SCAN_REQUEST_CODE);
+        startActivityForResult(intent, ConstantCode.SCAN_REQUEST_CODE);
     }
 //    任务单显示组件
     @BindView(R.id.task_id)
@@ -173,7 +180,7 @@ public class UIActivity extends AppCompatActivity {
     @OnClick(R.id.accelarate)
     public void setAccelarateButton(){
         mIsChangedToString = true;
-        mWhichButton = ActivityConstantCode.ACCELERATE_BUTTON_PRESSED;
+        mWhichButton = ConstantCode.ACCELERATE_BUTTON_PRESSED;
         sendCommand("SaccE");
     }
 //    测量角速度
@@ -182,7 +189,7 @@ public class UIActivity extends AppCompatActivity {
     @OnClick(R.id.palstance)
     public void setPalstanseButton(){
         mIsChangedToString = true;
-        mWhichButton = ActivityConstantCode.PALSTANCE_BUTTON_PRESSED;
+        mWhichButton = ConstantCode.PALSTANCE_BUTTON_PRESSED;
         sendCommand("SpalE");
     }
 //    测量角度
@@ -191,7 +198,7 @@ public class UIActivity extends AppCompatActivity {
     @OnClick(R.id.angle)
     public void setAngleButton(){
         mIsChangedToString = true;
-        mWhichButton = ActivityConstantCode.ANGLE_BUTTON_PRESSED;
+        mWhichButton = ConstantCode.ANGLE_BUTTON_PRESSED;
         sendCommand("SangE");
     }
 
@@ -201,7 +208,7 @@ public class UIActivity extends AppCompatActivity {
     @OnClick(R.id.distance)
     public void setDistanceButton(){
         mIsChangedToString = true;
-        mWhichButton = ActivityConstantCode.DISTANCE_BUTTON_PRESSED;
+        mWhichButton = ConstantCode.DISTANCE_BUTTON_PRESSED;
         sendCommand("SdisE");
     }
 
@@ -211,7 +218,7 @@ public class UIActivity extends AppCompatActivity {
     @OnClick(R.id.voice)
     public void setVoiceButton(){
         mIsChangedToString = true;
-        mWhichButton = ActivityConstantCode.VOICE_BUTTON_PRESSED;
+        mWhichButton = ConstantCode.VOICE_BUTTON_PRESSED;
         sendCommand("SvoiE");
     }
 
@@ -221,7 +228,7 @@ public class UIActivity extends AppCompatActivity {
     @OnClick(R.id.params_all)
     public void setAllParamsButton(){
         mIsChangedToString = true;
-        mWhichButton = ActivityConstantCode.DATA_BUTTON_PRESSED;
+        mWhichButton = ConstantCode.DATA_BUTTON_PRESSED;
         sendCommand("SDataE");
     }
 //    获取运行状态
@@ -230,7 +237,7 @@ public class UIActivity extends AppCompatActivity {
     @OnClick(R.id.running_status)
     public void setRunningStatusButton(){
         mIsChangedToString = false;
-        mWhichButton = ActivityConstantCode.RUNNING_STATUS_BUTTON_PRESSED;
+        mWhichButton = ConstantCode.RUNNING_STATUS_BUTTON_PRESSED;
         sendCommand("SstatusE");
     }
 //    测试连接状态
@@ -239,7 +246,7 @@ public class UIActivity extends AppCompatActivity {
     @OnClick(R.id.test_connection)
     public void setTestConnectionButton(){
         mIsChangedToString = true;
-        mWhichButton = ActivityConstantCode.TEST_BUTTON_PRESSED;
+        mWhichButton = ConstantCode.TEST_BUTTON_PRESSED;
         sendCommand("StestE");
     }
 //    获取故障信息
@@ -248,7 +255,7 @@ public class UIActivity extends AppCompatActivity {
     @OnClick(R.id.error_info)
     public void setErrorInfoButton(){
         mIsChangedToString = false;
-        mWhichButton = ActivityConstantCode.RUNNING_ERROR_BUTTON_PRESSED;
+        mWhichButton = ConstantCode.RUNNING_ERROR_BUTTON_PRESSED;
         sendCommand("SalarmE");
     }
 //    重置数据
@@ -257,7 +264,7 @@ public class UIActivity extends AppCompatActivity {
     @OnClick(R.id.reset_data)
     public void setResetDataButton(){
         mIsChangedToString = true;
-        mWhichButton = ActivityConstantCode.RESET_BUTTON_PRESSED;
+        mWhichButton = ConstantCode.RESET_BUTTON_PRESSED;
         sendCommand("SclearE");
     }
 //    上传数据
@@ -265,7 +272,7 @@ public class UIActivity extends AppCompatActivity {
     Button mUploadButton;
     @OnClick(R.id.upload)
     public void setUploadButton(){
-        mWhichButton = ActivityConstantCode.UPLOAD_BUTTON_PRESSED;
+        mWhichButton = ConstantCode.UPLOAD_BUTTON_PRESSED;
         Retrofit mRetrofit = InternetConnectionUtil.getRetrofit();
         UploadService service = mRetrofit.create(UploadService.class);
         Call<ResponseBody> call = service.upload(mToken,null);
@@ -301,12 +308,12 @@ public class UIActivity extends AppCompatActivity {
 
         switch (requestCode){
 //            这个是扫描二维码的Activity处理部分
-            case ActivityConstantCode.SCAN_REQUEST_CODE:
-                if (resultCode == ActivityConstantCode.SCAN_RESULT_OK){
+            case ConstantCode.SCAN_REQUEST_CODE:
+                if (resultCode == ConstantCode.SCAN_RESULT_OK){
                     Toast.makeText(this, "扫码成功", Toast.LENGTH_SHORT).show();
                     mLiftInfo = data.getStringExtra("result");
                 }
-                else if (resultCode == ActivityConstantCode.SCAN_RESULT_FAILED){
+                else if (resultCode == ConstantCode.SCAN_RESULT_FAILED){
                     Toast.makeText(this, "扫码失败，请重试", Toast.LENGTH_SHORT).show();
                 }
                 break;
@@ -330,14 +337,30 @@ public class UIActivity extends AppCompatActivity {
             Log.i(TAG, "onEvent: " + mWhichButton);
             if (s.equals("00"))
                 mShowArea.setText("no data");
-            else if (!mIsChangedToString){
-//                这里就是处理运行和错误数据的部分
+            else {
                 switch (mWhichButton){
-                    case ActivityConstantCode.RUNNING_STATUS_BUTTON_PRESSED:
+                    case ConstantCode.ACCELERATE_BUTTON_PRESSED:
+                        String mAccelerate = ConvertUtils.dexToString(s);
+                        String[] temp = mAccelerate.split("m/s2");
+                        mShowArea.setText(
+                                "测得的加速度为：" + "\n" +
+                                temp[0] + "\n" +
+                                temp[1] + "\n" +
+                                temp[2]);
+                        break;
+                    case ConstantCode.PALSTANCE_BUTTON_PRESSED:
+                        String mPalstance = ConvertUtils.dexToString(s);
+                        Log.i(TAG, "onEvent: " + mPalstance);
+                        break;
+                    case ConstantCode.ANGLE_BUTTON_PRESSED:
+                        break;
+                    case ConstantCode.RUNNING_STATUS_BUTTON_PRESSED:
+                        mShowArea.setText("");
                         statusInfoConvert(s);
                         showRunningStatusDialog();
                         break;
-                    case ActivityConstantCode.RUNNING_ERROR_BUTTON_PRESSED:
+                    case ConstantCode.RUNNING_ERROR_BUTTON_PRESSED:
+                        mShowArea.setText("");
                         errorInfoConvert(s);
                         showErrorDialog();
                         break;
@@ -346,24 +369,35 @@ public class UIActivity extends AppCompatActivity {
                 }
 
             }
-            else{
-//                这里简单显示相关数据
-                mShowArea.setText(ConvertUtils.dexToString(s));
-            }
 
         }
 
     }
+    private AlertDialog mRunningDialog;
 //    点击获取运行状态时的对话框处理
     private void showRunningStatusDialog(){
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_running,null);
-        AlertDialog dialog = new AlertDialog.Builder(this)
+        mRunningDialog = new AlertDialog.Builder(this)
                 .setView(view)
                 .create();
 //        ListView用ButterKnife会出错……不得不用find
         ListView mRunningInfoListView = (ListView) view.findViewById(R.id.running_info_listview);
+        Button mRunningInfoSureButton = (Button) view.findViewById(R.id.running_info_sure);
+        mRunningInfoSureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EventBus.getDefault().post(new DialogChange(ConstantCode.RUNNING_INFO_SURE_BUTTON_PRESSED));
+            }
+        });
+        Button mRunningInfoCancelButton = (Button) view.findViewById(R.id.running_info_cancel);
+        mRunningInfoCancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EventBus.getDefault().post(new DialogChange(ConstantCode.RUNNING_INFO_CANCEL_BUTTON_PRESSED));
+            }
+        });
         mRunningInfoListView.setAdapter(new StatusAdapter(this,mRunningInfoNumberValue));
-        dialog.show();
+        mRunningDialog.show();
     }
 
     //    运行数据处理
@@ -377,16 +411,33 @@ public class UIActivity extends AppCompatActivity {
     }
 
 
+    private AlertDialog mErrorDialog;
 //    点击获取故障信息的对话框处理
     private void showErrorDialog(){
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_error,null);
-        AlertDialog dialog = new AlertDialog.Builder(this)
+        mErrorDialog = new AlertDialog.Builder(this)
                 .setView(view)
                 .create();
+//        使用butterknife会报错，找不到响应组件
         ListView mErrorListView = (ListView) view.findViewById(R.id.error_info_listview);
+        Button mErrorInfoCancelButton = (Button) view.findViewById(R.id.error_info_cancel);
+        mErrorInfoCancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EventBus.getDefault().post(new DialogChange(ConstantCode.ERROR_INFO_CANCEL_BUTTON_PRESSED));
+            }
+        });
+        Button mErrorInfoSureButton = (Button) view.findViewById(R.id.error_info_sure);
+        mErrorInfoSureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EventBus.getDefault().post(new DialogChange(ConstantCode.ERROR_INFO_SURE_BUTTON_PRESSED));
+            }
+        });
         mErrorListView.setAdapter(new ErrorAdapter(this,mErrorInfoNumberValue));
-        dialog.show();
+        mErrorDialog.show();
     }
+
 //    运行故障信息处理
     private void errorInfoConvert(String s){
         mErrorInfoNumberValue = ErrorInfo.getmErrorNumberValue();
@@ -397,9 +448,51 @@ public class UIActivity extends AppCompatActivity {
         }
     }
 
+//    点击确定按钮后，更改被保存
+//    点击取消按钮后，更改取消
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDialogChange(DialogChange change){
+        switch (change.mAction){
+            case ConstantCode.ERROR_INFO_SURE_BUTTON_PRESSED:
+                Toast.makeText(this, "sure", Toast.LENGTH_SHORT).show();
+                mErrorInfoStringValue = ErrorAdapter.getmErrorInfoStringValue();
+                mErrorInfoNumberValue = ErrorAdapter.getmErrorInfoNumberValue();
+                Log.i(TAG, "onDialogChange: " + mErrorInfoNumberValue.get(2));
+                mErrorDialog.dismiss();
+                break;
+            case ConstantCode.ERROR_INFO_CANCEL_BUTTON_PRESSED:
+                Toast.makeText(this, "cancel", Toast.LENGTH_SHORT).show();
+                mErrorInfoStringValue = ErrorAdapter.getmErrorInfoStringValueOrigin();
+                mErrorInfoNumberValue = ErrorAdapter.getmErrorInfoNumberValueOrigin();
+                Log.i(TAG, "onDialogChange: " + mErrorInfoNumberValue.get(2));
+                mErrorDialog.dismiss();
+                break;
+            case ConstantCode.RUNNING_INFO_SURE_BUTTON_PRESSED:
+                Toast.makeText(this, "sure", Toast.LENGTH_SHORT).show();
+                mRunningInfoStringValue = StatusAdapter.getmStatusListStringValue();
+                mRunningInfoNumberValue = StatusAdapter.getmStatusListNumberValue();
+                Log.i(TAG, "onDialogChange: " + mRunningInfoNumberValue.get(2));
+                mRunningDialog.dismiss();
+                break;
+            case ConstantCode.RUNNING_INFO_CANCEL_BUTTON_PRESSED:
+                Toast.makeText(this, "cancel", Toast.LENGTH_SHORT).show();
+                mRunningInfoStringValue = StatusAdapter.getmStatusListStringValueOrigin();
+                mRunningInfoNumberValue = StatusAdapter.getmStatusListNumberValueOrigin();
+                Log.i(TAG, "onDialogChange: " + mRunningInfoNumberValue.get(2));
+                mRunningDialog.dismiss();
+                break;
+            default:
+                break;
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+        if (BLEService.mIsConnected){
+            BluetoothController.disconnect();
+            BLEService.mIsConnected = false;
+        }
     }
 }

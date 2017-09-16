@@ -167,9 +167,5 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (BLEService.mIsConnected){
-            BluetoothController.disconnect();
-            BLEService.mIsConnected = false;
-        }
     }
 }
