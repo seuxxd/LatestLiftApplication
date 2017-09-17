@@ -203,7 +203,7 @@ public class BluetoothController {
 //            接下来发送数据
 //            首先先进行一系列逻辑判断
             int length = content.length;
-
+            Log.i(TAG, "onCharacteristicChanged: " + mResult);
 //            因为通信协议默认发送20个字节，所以判断是否数据还没有接收完
 //            如果小于20，说明本次接收完毕，可以发送
             if (length < 20){
@@ -217,8 +217,10 @@ public class BluetoothController {
                     mResult = "";
                 }
                 else if (content[19] == 'd'){
-                    EventBus.getDefault().post(mResult);
-                    mResult = "";
+					if (!UIActivity.ismIsAllDataButton()){
+						EventBus.getDefault().post(mResult);
+						mResult = "";
+					}
                 }
             }
         }
@@ -304,7 +306,8 @@ public class BluetoothController {
 		if (bleGatt == null)
 			return false;
 		bleGattCharacteristic.setValue(str);
-		return bleGatt.writeCharacteristic(bleGattCharacteristic);
+        Log.i(TAG, "write: " + str);
+        return bleGatt.writeCharacteristic(bleGattCharacteristic);
 	}
 
 

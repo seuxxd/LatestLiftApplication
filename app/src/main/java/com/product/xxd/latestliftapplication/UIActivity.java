@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,12 +15,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +32,6 @@ import adapter.ErrorAdapter;
 import adapter.StatusAdapter;
 import ble.BLEService;
 import ble.BluetoothController;
-import ble.ConstantUtils;
 import ble.ConvertUtils;
 import butterknife.BindString;
 import butterknife.BindView;
@@ -36,8 +40,14 @@ import butterknife.OnClick;
 import eventbusobject.BLEConnInfo;
 import eventbusobject.DialogChange;
 import internet.InternetConnectionUtil;
+import jsonmodel.Data;
+import jsonmodel.ErrorModel;
+import jsonmodel.LiftParams;
 import internet.TaskIdService;
+import internet.TestClass;
 import internet.UploadService;
+import jsonmodel.RunningInfoModel;
+import jsonmodel.UploadData;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -72,7 +82,12 @@ public class UIActivity extends AppCompatActivity {
     private List<Integer> mErrorInfoNumberValue;
 //    故障信息的value字符串表示
     private List<String> mErrorInfoStringValue;
+//    上传的json字符串
+    private Gson mParamsGson = new Gson();
+    private Data mData = new Data();
 
+    private static boolean mIsAllDataButton = false;
+    private LiftParams mLiftParams = new LiftParams();
 //    打开蓝牙连接的字符串
     @BindString(R.string.ble)
     String mConnect;
@@ -181,6 +196,7 @@ public class UIActivity extends AppCompatActivity {
     public void setAccelarateButton(){
         mIsChangedToString = true;
         mWhichButton = ConstantCode.ACCELERATE_BUTTON_PRESSED;
+        mIsAllDataButton = false;
         sendCommand("SaccE");
     }
 //    测量角速度
@@ -190,6 +206,7 @@ public class UIActivity extends AppCompatActivity {
     public void setPalstanseButton(){
         mIsChangedToString = true;
         mWhichButton = ConstantCode.PALSTANCE_BUTTON_PRESSED;
+        mIsAllDataButton = false;
         sendCommand("SpalE");
     }
 //    测量角度
@@ -199,6 +216,7 @@ public class UIActivity extends AppCompatActivity {
     public void setAngleButton(){
         mIsChangedToString = true;
         mWhichButton = ConstantCode.ANGLE_BUTTON_PRESSED;
+        mIsAllDataButton = false;
         sendCommand("SangE");
     }
 
@@ -209,6 +227,7 @@ public class UIActivity extends AppCompatActivity {
     public void setDistanceButton(){
         mIsChangedToString = true;
         mWhichButton = ConstantCode.DISTANCE_BUTTON_PRESSED;
+        mIsAllDataButton = false;
         sendCommand("SdisE");
     }
 
@@ -219,6 +238,7 @@ public class UIActivity extends AppCompatActivity {
     public void setVoiceButton(){
         mIsChangedToString = true;
         mWhichButton = ConstantCode.VOICE_BUTTON_PRESSED;
+        mIsAllDataButton = false;
         sendCommand("SvoiE");
     }
 
@@ -229,6 +249,7 @@ public class UIActivity extends AppCompatActivity {
     public void setAllParamsButton(){
         mIsChangedToString = true;
         mWhichButton = ConstantCode.DATA_BUTTON_PRESSED;
+        mIsAllDataButton = true;
         sendCommand("SDataE");
     }
 //    获取运行状态
@@ -238,6 +259,7 @@ public class UIActivity extends AppCompatActivity {
     public void setRunningStatusButton(){
         mIsChangedToString = false;
         mWhichButton = ConstantCode.RUNNING_STATUS_BUTTON_PRESSED;
+        mIsAllDataButton = false;
         sendCommand("SstatusE");
     }
 //    测试连接状态
@@ -247,6 +269,7 @@ public class UIActivity extends AppCompatActivity {
     public void setTestConnectionButton(){
         mIsChangedToString = true;
         mWhichButton = ConstantCode.TEST_BUTTON_PRESSED;
+        mIsAllDataButton = false;
         sendCommand("StestE");
     }
 //    获取故障信息
@@ -256,6 +279,7 @@ public class UIActivity extends AppCompatActivity {
     public void setErrorInfoButton(){
         mIsChangedToString = false;
         mWhichButton = ConstantCode.RUNNING_ERROR_BUTTON_PRESSED;
+        mIsAllDataButton = false;
         sendCommand("SalarmE");
     }
 //    重置数据
@@ -265,6 +289,7 @@ public class UIActivity extends AppCompatActivity {
     public void setResetDataButton(){
         mIsChangedToString = true;
         mWhichButton = ConstantCode.RESET_BUTTON_PRESSED;
+        mIsAllDataButton = false;
         sendCommand("SclearE");
     }
 //    上传数据
@@ -273,16 +298,80 @@ public class UIActivity extends AppCompatActivity {
     @OnClick(R.id.upload)
     public void setUploadButton(){
         mWhichButton = ConstantCode.UPLOAD_BUTTON_PRESSED;
+        String error;
+        String running_info;
+
+//        电梯加速度等参数
+        String str = mParamsGson.toJson(mLiftParams);
+        mIsAllDataButton = false;
+        Log.i(TAG, "电梯参数: " + str);
+//        电梯故障信息
+        ErrorModel errorModel = new ErrorModel();
+        for (int i = 0 ; i < mErrorInfoNumberValue.size() ; i ++){
+            errorModel
+                    .getErrorMaps()
+                    .put(ErrorInfo.getmErrorInfo().get(i), mErrorInfoNumberValue.get(i));
+        }
+        //        电梯运行信息
+        RunningInfoModel runningiInfoModel = new RunningInfoModel();
+        for (int i = 0 ; i < mRunningInfoNumberValue.size() ; i ++){
+            runningiInfoModel
+                    .getRunningInfoMaps()
+                    .put(RunningStatus.getStatusList().get(i),mRunningInfoNumberValue.get(i));
+        }
+        String temp = mParamsGson.toJson(errorModel);
+        String temp2 = mParamsGson.toJson(runningiInfoModel);
+
+        try {
+            JSONObject object = new JSONObject(temp);
+            error = object.getString("mErrorMaps");
+            object = new JSONObject(temp2);
+            running_info = object.getString("mRunningInfoMaps");
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            error = "no data";
+            running_info = "no data";
+        }
+
+        error = error.substring(1,error.length() - 1);
+        running_info = running_info.substring(1,running_info.length() - 1);
+        String test = mParamsGson.toJson(mData);
+        test = test.substring(1,test.length() - 1);
+        String uploadString =
+                "{" + error +"," + running_info + "," + test + "," + "id" + ":" + mLiftInfo + "}";
+        Log.i(TAG, "upload: " + uploadString);
+        Data data = mParamsGson.fromJson(uploadString,Data.class);
+        UploadData upload = new UploadData();
+        upload.setTaskListID(mTaskIDText.getText().toString());
+        upload.setTempData(data);
         Retrofit mRetrofit = InternetConnectionUtil.getRetrofit();
+
         UploadService service = mRetrofit.create(UploadService.class);
-        Call<ResponseBody> call = service.upload(mToken,null);
+        Call<ResponseBody> call = service.upload(mToken,upload);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    Log.i(TAG, "onResponse: " + response.body().string());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+
     }
 //    获取历史信息
     @BindView(R.id.history)
     Button mHistoryButton;
     @OnClick(R.id.history)
     public void setHistoryButton(){
-
+        mIsAllDataButton = true;
     }
 //    发送指令到蓝牙模块
     private void sendCommand(String command){
@@ -296,6 +385,7 @@ public class UIActivity extends AppCompatActivity {
         setContentView(R.layout.activity_ui);
 //        绑定ButterKnife
         ButterKnife.bind(this);
+        mShowArea.setMovementMethod(ScrollingMovementMethod.getInstance());
         mToken = getIntent().getStringExtra("token");
         EventBus.getDefault().register(this);
     }
@@ -335,42 +425,101 @@ public class UIActivity extends AppCompatActivity {
 //        其他进行转换，变成字符串
         else {
             Log.i(TAG, "onEvent: " + mWhichButton);
-            if (s.equals("00"))
-                mShowArea.setText("no data");
-            else {
-                switch (mWhichButton){
-                    case ConstantCode.ACCELERATE_BUTTON_PRESSED:
-                        String mAccelerate = ConvertUtils.dexToString(s);
-                        String[] temp = mAccelerate.split("m/s2");
-                        mShowArea.setText(
-                                "测得的加速度为：" + "\n" +
-                                temp[0] + "\n" +
-                                temp[1] + "\n" +
-                                temp[2]);
-                        break;
-                    case ConstantCode.PALSTANCE_BUTTON_PRESSED:
-                        String mPalstance = ConvertUtils.dexToString(s);
-                        Log.i(TAG, "onEvent: " + mPalstance);
-                        break;
-                    case ConstantCode.ANGLE_BUTTON_PRESSED:
-                        break;
-                    case ConstantCode.RUNNING_STATUS_BUTTON_PRESSED:
-                        mShowArea.setText("");
-                        statusInfoConvert(s);
-                        showRunningStatusDialog();
-                        break;
-                    case ConstantCode.RUNNING_ERROR_BUTTON_PRESSED:
-                        mShowArea.setText("");
-                        errorInfoConvert(s);
-                        showErrorDialog();
-                        break;
-                    default:
-                        break;
-                }
-
+            switch (mWhichButton){
+                case ConstantCode.ACCELERATE_BUTTON_PRESSED:
+                    String mAccelerate = ConvertUtils.dexToString(s);
+                    String[] temp = mAccelerate.split("m/s2");
+                    mShowArea.setText(
+                            "测得的加速度为：" + "\n" +
+                                    temp[0] + "\n" +
+                                    temp[1] + "\n" +
+                                    temp[2]);
+                    mLiftParams.setAcc(temp);
+                    break;
+                case ConstantCode.PALSTANCE_BUTTON_PRESSED:
+                    String mPalstance = ConvertUtils.dexToString(s);
+                    Log.i(TAG, "onEvent: " + mPalstance);
+                    String[] temp2 = mPalstance.split("d/s");
+                    mShowArea.setText(
+                            "测得的角速度为：" + "\n" +
+                                    temp2[0] + "\n" +
+                                    temp2[1] + "\n" +
+                                    temp2[2]);
+                    mLiftParams.setPal(temp2);
+                    break;
+                case ConstantCode.ANGLE_BUTTON_PRESSED:
+                    String mAngle = ConvertUtils.dexToString(s);
+                    Log.i(TAG, "onEvent: " + mAngle);
+                    String[] temp3 = mAngle.split("d");
+                    mShowArea.setText(
+                            "测得的角度为：" + "\n" +
+                                    temp3[0] + "\n" +
+                                    temp3[1] + "\n" +
+                                    temp3[2]);
+                    mLiftParams.setAngle(temp3);
+                    break;
+                case ConstantCode.DISTANCE_BUTTON_PRESSED:
+                    String mDistance = ConvertUtils.dexToString(s);
+                    Log.i(TAG, "onEvent: " + mDistance);
+                    mShowArea.setText("测得的距离为："  + "\n" + mDistance);
+                    mLiftParams.setDistance(Double.valueOf(mDistance.split("cm")[0]));
+                    break;
+                case ConstantCode.VOICE_BUTTON_PRESSED:
+                    String mVoice = ConvertUtils.dexToString(s);
+                    Log.i(TAG, "onEvent: " + mVoice);
+                    mShowArea.setText("测得的噪声大小为：" + "\n" + mVoice);
+                    mLiftParams.setVoice(Double.valueOf(mVoice.split("dB")[0]));
+                    break;
+                case ConstantCode.DATA_BUTTON_PRESSED:
+                    parseDataFromBLE(s);
+                    break;
+                case ConstantCode.RUNNING_STATUS_BUTTON_PRESSED:
+                    mShowArea.setText("");
+                    statusInfoConvert(s);
+                    showRunningStatusDialog();
+                    break;
+                case ConstantCode.TEST_BUTTON_PRESSED:
+                    mShowArea.setText(ConvertUtils.dexToString(s));
+                    break;
+                case ConstantCode.RUNNING_ERROR_BUTTON_PRESSED:
+                    mShowArea.setText("");
+                    errorInfoConvert(s);
+                    showErrorDialog();
+                    break;
+                case ConstantCode.RESET_BUTTON_PRESSED:
+                    Toast.makeText(this, "采集器存储数据已清空", Toast.LENGTH_SHORT).show();
+                    break;
+                case ConstantCode.UPLOAD_BUTTON_PRESSED:
+                    break;
+                case ConstantCode.HISTORY_BUTTON_PRESED:
+                    parseHistory();
+                    break;
+                default:
+                    break;
             }
-
         }
+    }
+
+//    解析蓝牙返回的全部数据
+    private void parseDataFromBLE(String s){
+        if (s.equals("00")){
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mShowArea.setText("请通过手持终端更新数据");
+                }
+            });
+        }
+        else {
+            String temp = ConvertUtils.dexToString(s);
+            Log.i(TAG, "parseDataFromBLE: " + temp);
+            mLiftParams = mParamsGson.fromJson(temp,LiftParams.class);
+            mData.setRunning_params(mLiftParams);
+            mShowArea.setText(mLiftParams.toString());
+        }
+    }
+//    获取历史记录之后的解析工作
+    private void parseHistory(){
 
     }
     private AlertDialog mRunningDialog;
@@ -440,6 +589,7 @@ public class UIActivity extends AppCompatActivity {
 
 //    运行故障信息处理
     private void errorInfoConvert(String s){
+        Log.i(TAG, "errorInfoConvert: " + s);
         mErrorInfoNumberValue = ErrorInfo.getmErrorNumberValue();
         for (int i = 21 ; i < 41 ; i += 2){
             int temp = ((int) s.charAt(i)) - 48;
@@ -487,12 +637,21 @@ public class UIActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        EventBus.getDefault().unregister(this);
+    protected void onStop() {
+        super.onStop();
         if (BLEService.mIsConnected){
             BluetoothController.disconnect();
             BLEService.mIsConnected = false;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+    public static boolean ismIsAllDataButton() {
+        return mIsAllDataButton;
     }
 }

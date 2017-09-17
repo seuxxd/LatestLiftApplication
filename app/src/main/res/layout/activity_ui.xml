@@ -45,7 +45,7 @@
             android:id="@+id/show_params"
             android:scrollbars="vertical"
             android:textSize="16sp"
-            android:maxLines="5"
+            android:maxLines="10"
             android:gravity="center"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>

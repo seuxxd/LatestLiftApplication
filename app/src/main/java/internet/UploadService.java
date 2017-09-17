@@ -1,8 +1,12 @@
 package internet;
 
+import jsonmodel.Data;
+import jsonmodel.UploadData;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
 
@@ -12,5 +16,6 @@ import retrofit2.http.POST;
 
 public interface UploadService {
     @POST("data/add.do")
-    Call<ResponseBody> upload(@Header("token") String token , @Body Data data);
+    Call<ResponseBody> upload(@Header("token") String token ,
+                              @Body UploadData data);
 }
