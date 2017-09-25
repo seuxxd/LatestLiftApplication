@@ -3,16 +3,19 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
+    android:background="#ccff99"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.product.xxd.latestliftapplication.UIActivity">
 
     <LinearLayout
         android:orientation="horizontal"
+        android:background="#ccff99"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <Button
             android:id="@+id/scan_button"
+            android:background="@drawable/button_state"
             android:layout_margin="4dp"
             android:layout_width="0dp"
             android:layout_weight="1"
@@ -28,6 +31,7 @@
             android:layout_height="wrap_content"/>
         <Button
             android:id="@+id/ble_button"
+            android:background="@drawable/button_state"
             android:layout_margin="4dp"
             android:layout_width="0dp"
             android:layout_weight="1"
@@ -36,15 +40,22 @@
     </LinearLayout>
     <LinearLayout
         android:id="@+id/show_area"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_weight="0.5"
         android:layout_width="match_parent"
         android:layout_height="0dp">
+        <TextView
+            android:id="@+id/lift_id"
+            android:background="#99cccc"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/show_params"
             android:scrollbars="vertical"
             android:textSize="16sp"
+            android:background="@drawable/textview_background"
             android:maxLines="10"
             android:gravity="center"
             android:layout_width="match_parent"
@@ -62,6 +73,7 @@
             android:layout_height="wrap_content">
             <Button
                 android:id="@+id/accelarate"
+                android:background="@drawable/button_state"
                 android:text="@string/accelarate"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
@@ -69,6 +81,7 @@
                 android:layout_height="wrap_content"/>
             <Button
                 android:id="@+id/palstance"
+                android:background="@drawable/button_state"
                 android:text="@string/palstance"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
@@ -76,6 +89,7 @@
                 android:layout_height="wrap_content"/>
             <Button
                 android:id="@+id/angle"
+                android:background="@drawable/button_state"
                 android:text="@string/angle"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
@@ -89,6 +103,7 @@
             android:layout_height="wrap_content">
             <Button
                 android:id="@+id/distance"
+                android:background="@drawable/button_state"
                 android:text="@string/distance"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
@@ -96,6 +111,7 @@
                 android:layout_height="wrap_content"/>
             <Button
                 android:id="@+id/voice"
+                android:background="@drawable/button_state"
                 android:text="@string/voice"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
@@ -103,6 +119,7 @@
                 android:layout_height="wrap_content"/>
             <Button
                 android:id="@+id/params_all"
+                android:background="@drawable/button_state"
                 android:text="@string/all_params"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
@@ -116,6 +133,7 @@
             android:layout_height="wrap_content">
             <Button
                 android:id="@+id/running_status"
+                android:background="@drawable/button_state"
                 android:text="@string/running_status"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
@@ -123,6 +141,7 @@
                 android:layout_height="wrap_content"/>
             <Button
                 android:id="@+id/test_connection"
+                android:background="@drawable/button_state"
                 android:text="@string/test_connection"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
@@ -130,6 +149,7 @@
                 android:layout_height="wrap_content"/>
             <Button
                 android:id="@+id/error_info"
+                android:background="@drawable/button_state"
                 android:text="@string/error_info"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
@@ -143,6 +163,7 @@
             android:layout_height="wrap_content">
             <Button
                 android:id="@+id/reset_data"
+                android:background="@drawable/button_state"
                 android:text="@string/reset_data"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
@@ -150,13 +171,16 @@
                 android:layout_height="wrap_content"/>
             <Button
                 android:id="@+id/upload"
+                android:enabled="false"
                 android:text="@string/upload_data"
+                android:background="@drawable/button_state"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"/>
             <Button
                 android:id="@+id/history"
+                android:background="@drawable/button_state"
                 android:text="@string/history_data"
                 android:layout_margin="4dp"
                 android:layout_weight="1"

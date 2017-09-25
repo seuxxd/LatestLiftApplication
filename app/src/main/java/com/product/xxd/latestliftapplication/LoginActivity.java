@@ -1,6 +1,12 @@
 package com.product.xxd.latestliftapplication;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,7 +14,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,6 +60,12 @@ public class LoginActivity extends AppCompatActivity {
 //    Toolbar里面的标题自定义的文本框
     @BindView(R.id.toolbar_title)
     TextView mToolbarTitle;
+//    Toolbar的图标
+    @BindView(R.id.toolbar_icon)
+    ImageView mToolbarIcon;
+//    CheckBox的绑定，判断是否需要保存用户名和密码
+    @BindView(R.id.check_store)
+    CheckBox mStoreUserPass;
 //    字符串的绑定
 //    toolbar显示的字符串
     @BindString(R.string.login_title)
@@ -64,14 +78,16 @@ public class LoginActivity extends AppCompatActivity {
     String mEmptyPassword;
 
 
+    String username;
+    String password;
 //    按键的事件响应
     @OnClick(R.id.login_button)
     public void login(){
         Retrofit mRetrofit = InternetConnectionUtil.getRetrofit();
         LoginService loginService = mRetrofit.create(LoginService.class);
         Log.i(TAG, "login:");
-        String username = mUsername.getText().toString();
-        String password = mPassword.getText().toString();
+        username = mUsername.getText().toString();
+        password = mPassword.getText().toString();
         if (username.trim().equals("")){
             mUsernameTextInput.setError(mEmptyUsername);
         }
@@ -111,6 +127,7 @@ public class LoginActivity extends AppCompatActivity {
         mPasswordTextInput.setHint("Password");
         mToolbar.setTitle("");
         mToolbarTitle.setText(mTitleString);
+        mToolbarIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.mipmap.icon));
         setSupportActionBar(mToolbar);
     }
 
@@ -143,6 +160,7 @@ public class LoginActivity extends AppCompatActivity {
                 Intent intent = new Intent(LoginActivity.this,UIActivity.class);
                 intent.putExtra("token",mToken);
                 startActivity(intent);
+                storeUserInfo(username,password,mStoreUserPass.isChecked());
             }
             else {
                 Log.i(TAG, "testResponse: " + mMessage);
@@ -163,9 +181,32 @@ public class LoginActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+//    保存用户名和密码
+    private void storeUserInfo(String username , String password , boolean isStore){
+        SharedPreferences sharedPreferences = getSharedPreferences("login", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("username",username);
+        editor.putString("password",password);
+        editor.putBoolean("store",isStore);
+        editor.apply();
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
+        SharedPreferences sharedPreferences = getSharedPreferences("login",Context.MODE_PRIVATE);
+        String username = sharedPreferences.getString("username","");
+        String password = sharedPreferences.getString("password","");
+        boolean store   = sharedPreferences.getBoolean("store",false);
+        if (store){
+            mUsername.setText(username);
+            mPassword.setText(password);
+            mStoreUserPass.setChecked(true);
+        }
+        else{
+            mUsername.setText("");
+            mPassword.setText("");
+            mStoreUserPass.setChecked(false);
+        }
     }
 }

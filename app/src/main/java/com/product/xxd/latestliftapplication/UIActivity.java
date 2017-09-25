@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,12 +25,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import adapter.ErrorAdapter;
 import adapter.StatusAdapter;
+import adapter.UploadAdapter;
 import ble.BLEService;
 import ble.BluetoothController;
 import ble.ConvertUtils;
@@ -37,6 +39,7 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import dialog.TaskIDDialog;
 import eventbusobject.BLEConnInfo;
 import eventbusobject.DialogChange;
 import internet.InternetConnectionUtil;
@@ -44,7 +47,6 @@ import jsonmodel.Data;
 import jsonmodel.ErrorModel;
 import jsonmodel.LiftParams;
 import internet.TaskIdService;
-import internet.TestClass;
 import internet.UploadService;
 import jsonmodel.RunningInfoModel;
 import jsonmodel.UploadData;
@@ -85,6 +87,10 @@ public class UIActivity extends AppCompatActivity {
 //    上传的json字符串
     private Gson mParamsGson = new Gson();
     private Data mData = new Data();
+//    上传时是否数据齐全的判据
+    private int mAllDataNumber = 0;
+    private int mRunningInfoNumber = 0;
+    private int mErrorStatusNumber = 0;
 
     private static boolean mIsAllDataButton = false;
     private LiftParams mLiftParams = new LiftParams();
@@ -94,6 +100,9 @@ public class UIActivity extends AppCompatActivity {
 //    断开蓝牙的字符串
     @BindString(R.string.disconnect)
     String mDisconnect;
+//    设备ID
+    @BindString(R.string.lift_id)
+    String mLiftId;
 //    扫描二维码的按键
     @BindView(R.id.scan_button)
     Button mButtonScanCode;
@@ -145,7 +154,22 @@ public class UIActivity extends AppCompatActivity {
     }
 //    展示任务单的对话框
     private void showTaskIDDialog(final List<String> list){
-        View view = LayoutInflater.from(this).inflate(R.layout.dialog_taskid,null);
+        final TaskIDDialog dialog = new TaskIDDialog(this);
+        dialog.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,list));
+//        设置对话框大小
+        dialog.getWindow().setLayout(900,450);
+//        设置背景为透明，这样就会出现圆角对话框
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        dialog.setCancelable(true);
+        dialog.show();
+        dialog.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mTaskIDText.setText(list.get(position));
+                dialog.dismiss();
+            }
+        });
+        /*View view = LayoutInflater.from(this).inflate(R.layout.dialog_taskid,null);
         final AlertDialog mdialog = new AlertDialog.Builder(this)
                 .setView(view)
                 .create();
@@ -158,7 +182,7 @@ public class UIActivity extends AppCompatActivity {
                 mTaskIDText.setText(list.get(position));
                 mdialog.dismiss();
             }
-        });
+        });*/
     }
 
 //    打开BLE的按键
@@ -186,6 +210,8 @@ public class UIActivity extends AppCompatActivity {
     }
 
 //    数据展示界面
+    @BindView(R.id.lift_id)
+    TextView mShowId;
     @BindView(R.id.show_params)
     TextView mShowArea;
 //    绑定初始化12个按键
@@ -251,6 +277,24 @@ public class UIActivity extends AppCompatActivity {
         mWhichButton = ConstantCode.DATA_BUTTON_PRESSED;
         mIsAllDataButton = true;
         sendCommand("SDataE");
+        setTime();
+    }
+    private void setTime(){
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        int second = calendar.get(Calendar.SECOND);
+        String y = String.valueOf(year);
+        String m = (month < 10) ? "0" + month : String.valueOf(month);
+        String d = (day < 10) ? "0" + day : String.valueOf(day);
+        String h = (hour < 10) ? "0" + hour : String.valueOf(hour);
+        String mi = (minute < 10) ? "0" + minute : String.valueOf(minute);
+        String s = (second < 10) ? "0" + second : String.valueOf(second);
+        String str = "ST" + y + m + d + h + mi + s + "E";
+        sendCommand(str);
     }
 //    获取运行状态
     @BindView(R.id.running_status)
@@ -313,14 +357,14 @@ public class UIActivity extends AppCompatActivity {
                     .put(ErrorInfo.getmErrorInfo().get(i), mErrorInfoNumberValue.get(i));
         }
         //        电梯运行信息
-        RunningInfoModel runningiInfoModel = new RunningInfoModel();
+        RunningInfoModel runningInfoModel = new RunningInfoModel();
         for (int i = 0 ; i < mRunningInfoNumberValue.size() ; i ++){
-            runningiInfoModel
+            runningInfoModel
                     .getRunningInfoMaps()
                     .put(RunningStatus.getStatusList().get(i),mRunningInfoNumberValue.get(i));
         }
         String temp = mParamsGson.toJson(errorModel);
-        String temp2 = mParamsGson.toJson(runningiInfoModel);
+        String temp2 = mParamsGson.toJson(runningInfoModel);
 
         try {
             JSONObject object = new JSONObject(temp);
@@ -345,25 +389,78 @@ public class UIActivity extends AppCompatActivity {
         UploadData upload = new UploadData();
         upload.setTaskListID(mTaskIDText.getText().toString());
         upload.setTempData(data);
-        Retrofit mRetrofit = InternetConnectionUtil.getRetrofit();
+        Log.i(TAG, "setUploadButton: " + mParamsGson.toJson(upload,UploadData.class));
 
-        UploadService service = mRetrofit.create(UploadService.class);
-        Call<ResponseBody> call = service.upload(mToken,upload);
-        call.enqueue(new Callback<ResponseBody>() {
+        getUploadShowString(mToken,upload);
+
+    }
+//    上传数据时展示的内容
+    private void getUploadShowString(final String token , final UploadData uploadData){
+        List<String> mKeyList = new ArrayList<>();
+        List<String> mValueList = new ArrayList<>();
+        mKeyList.add("id");
+        mValueList.add(mLiftInfo);
+        mKeyList.add("parameters");
+        mValueList.add(mLiftParams.toString());
+        for (int i = 0 ; i < ErrorAdapter.getmErrorInfoStringValue().size() ; i ++){
+            mKeyList.add(ErrorInfo.getmErrorChineseInfo().get(i));
+            mValueList.add(ErrorAdapter.getmErrorInfoStringValue().get(i));
+        }
+        for (int i = 0 ; i < StatusAdapter.getmStatusListStringValue().size() ; i ++){
+            mKeyList.add(RunningStatus.getStatusChineseList().get(i));
+            mValueList.add(StatusAdapter.getmStatusListStringValue().get(i));
+        }
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_upload,null);
+        final AlertDialog dialog =
+                new AlertDialog
+                        .Builder(this)
+                        .setView(view)
+                        .setCancelable(true)
+                        .create();
+        ListView listView = (ListView) view.findViewById(R.id.upload_content);
+        Button mButtonEnsure = (Button) view.findViewById(R.id.upload_ensure);
+        Button mButtonCancel = (Button) view.findViewById(R.id.upload_cancel);
+
+        mButtonEnsure.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    Log.i(TAG, "onResponse: " + response.body().string());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            public void onClick(View v) {
+                Retrofit mRetrofit = InternetConnectionUtil.getRetrofit();
 
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                UploadService service = mRetrofit.create(UploadService.class);
+                Call<ResponseBody> call = service.upload(token,uploadData);
+                call.enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        try {
+                            JSONObject object = new JSONObject(response.body().string());
+                            String result = object.getString("message");
+                            if (result.equals("添加成功")){
+                                Toast.makeText(UIActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
+                            }
+                            else {
+                                Toast.makeText(UIActivity.this, result, Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
 
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                    }
+                });
+                dialog.dismiss();
             }
         });
+        mButtonCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        listView.setAdapter(new UploadAdapter(this,mValueList,mKeyList));
+        dialog.show();
 
     }
 //    获取历史信息
@@ -372,7 +469,27 @@ public class UIActivity extends AppCompatActivity {
     @OnClick(R.id.history)
     public void setHistoryButton(){
         mIsAllDataButton = true;
+        mWhichButton = ConstantCode.HISTORY_BUTTON_PRESED;
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_history,null);
+        //    历史数据获得调用的对话框
+        final AlertDialog mHistoryDialog =
+                new AlertDialog.Builder(this)
+                        .setView(view)
+                        .setCancelable(true)
+                        .create();
+        mHistoryDialog.show();
+        Button mNumberButton = (Button) view.findViewById(R.id.submit_history_number);
+        final EditText mNumberText = (EditText) view.findViewById(R.id.history_number);
+        mNumberButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String str = "SN" + mNumberText.getText().toString() + "E";
+                sendCommand(str);
+                mHistoryDialog.dismiss();
+            }
+        });
     }
+
 //    发送指令到蓝牙模块
     private void sendCommand(String command){
         mController.write(command);
@@ -388,6 +505,16 @@ public class UIActivity extends AppCompatActivity {
         mShowArea.setMovementMethod(ScrollingMovementMethod.getInstance());
         mToken = getIntent().getStringExtra("token");
         EventBus.getDefault().register(this);
+        checkUploadPossibility();
+
+    }
+    private void checkUploadPossibility(){
+        if (mAllDataNumber + mErrorStatusNumber + mRunningInfoNumber != 3){
+            mUploadButton.setEnabled(false);
+        }
+        else {
+            mUploadButton.setEnabled(true);
+        }
     }
 
 //    有结果返回的Activity的处理
@@ -402,6 +529,8 @@ public class UIActivity extends AppCompatActivity {
                 if (resultCode == ConstantCode.SCAN_RESULT_OK){
                     Toast.makeText(this, "扫码成功", Toast.LENGTH_SHORT).show();
                     mLiftInfo = data.getStringExtra("result");
+                    String str = mLiftId + " : " +mLiftInfo;
+                    mShowId.setText(str);
                 }
                 else if (resultCode == ConstantCode.SCAN_RESULT_FAILED){
                     Toast.makeText(this, "扫码失败，请重试", Toast.LENGTH_SHORT).show();
@@ -471,7 +600,9 @@ public class UIActivity extends AppCompatActivity {
                     mLiftParams.setVoice(Double.valueOf(mVoice.split("dB")[0]));
                     break;
                 case ConstantCode.DATA_BUTTON_PRESSED:
-                    parseDataFromBLE(s);
+                    mAllDataNumber = 1;
+                    checkUploadPossibility();
+                    mShowArea.setText(parseDataFromBLE(s));
                     break;
                 case ConstantCode.RUNNING_STATUS_BUTTON_PRESSED:
                     mShowArea.setText("");
@@ -492,7 +623,7 @@ public class UIActivity extends AppCompatActivity {
                 case ConstantCode.UPLOAD_BUTTON_PRESSED:
                     break;
                 case ConstantCode.HISTORY_BUTTON_PRESED:
-                    parseHistory();
+                    mShowArea.setText(parseHistory(s));
                     break;
                 default:
                     break;
@@ -501,25 +632,37 @@ public class UIActivity extends AppCompatActivity {
     }
 
 //    解析蓝牙返回的全部数据
-    private void parseDataFromBLE(String s){
+    private String parseDataFromBLE(String s){
+        String mShowString = "";
         if (s.equals("00")){
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mShowArea.setText("请通过手持终端更新数据");
-                }
-            });
+            mShowString = "请通过手持终端更新数据";
         }
         else {
             String temp = ConvertUtils.dexToString(s);
             Log.i(TAG, "parseDataFromBLE: " + temp);
             mLiftParams = mParamsGson.fromJson(temp,LiftParams.class);
             mData.setRunning_params(mLiftParams);
-            mShowArea.setText(mLiftParams.toString());
+            mShowString = mLiftParams.toString();
         }
+        return mShowString;
     }
 //    获取历史记录之后的解析工作
-    private void parseHistory(){
+    private String parseHistory(String s){
+        String mShowString = "";
+        if (s.equals("00")){
+            mShowString = "请通过手持终端更新数据";
+        }
+        else {
+            String temp = ConvertUtils.dexToString(s);
+            String[] mHistoryString = temp.split("\\}");
+            for (int i = 0 ; i < mHistoryString.length ; i ++){
+                mHistoryString[i] = mHistoryString[i] + "}";
+                mLiftParams = mParamsGson.fromJson(mHistoryString[i],LiftParams.class);
+                mShowString += mLiftParams.toString();
+                mShowString += "\n";
+            }
+        }
+        return mShowString;
 
     }
     private AlertDialog mRunningDialog;
@@ -604,31 +747,35 @@ public class UIActivity extends AppCompatActivity {
     public void onDialogChange(DialogChange change){
         switch (change.mAction){
             case ConstantCode.ERROR_INFO_SURE_BUTTON_PRESSED:
-                Toast.makeText(this, "sure", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "更改成功", Toast.LENGTH_SHORT).show();
+                mErrorStatusNumber = 1;
+                checkUploadPossibility();
                 mErrorInfoStringValue = ErrorAdapter.getmErrorInfoStringValue();
                 mErrorInfoNumberValue = ErrorAdapter.getmErrorInfoNumberValue();
-                Log.i(TAG, "onDialogChange: " + mErrorInfoNumberValue.get(2));
                 mErrorDialog.dismiss();
                 break;
             case ConstantCode.ERROR_INFO_CANCEL_BUTTON_PRESSED:
-                Toast.makeText(this, "cancel", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "取消更改", Toast.LENGTH_SHORT).show();
+                mErrorStatusNumber = 1;
+                checkUploadPossibility();
                 mErrorInfoStringValue = ErrorAdapter.getmErrorInfoStringValueOrigin();
                 mErrorInfoNumberValue = ErrorAdapter.getmErrorInfoNumberValueOrigin();
-                Log.i(TAG, "onDialogChange: " + mErrorInfoNumberValue.get(2));
                 mErrorDialog.dismiss();
                 break;
             case ConstantCode.RUNNING_INFO_SURE_BUTTON_PRESSED:
-                Toast.makeText(this, "sure", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "更改成功", Toast.LENGTH_SHORT).show();
+                mRunningInfoNumber = 1;
+                checkUploadPossibility();
                 mRunningInfoStringValue = StatusAdapter.getmStatusListStringValue();
                 mRunningInfoNumberValue = StatusAdapter.getmStatusListNumberValue();
-                Log.i(TAG, "onDialogChange: " + mRunningInfoNumberValue.get(2));
                 mRunningDialog.dismiss();
                 break;
             case ConstantCode.RUNNING_INFO_CANCEL_BUTTON_PRESSED:
-                Toast.makeText(this, "cancel", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "取消更改", Toast.LENGTH_SHORT).show();
+                mRunningInfoNumber = 1;
+                checkUploadPossibility();
                 mRunningInfoStringValue = StatusAdapter.getmStatusListStringValueOrigin();
                 mRunningInfoNumberValue = StatusAdapter.getmStatusListNumberValueOrigin();
-                Log.i(TAG, "onDialogChange: " + mRunningInfoNumberValue.get(2));
                 mRunningDialog.dismiss();
                 break;
             default:

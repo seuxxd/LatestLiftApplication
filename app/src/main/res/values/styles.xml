@@ -13,5 +13,15 @@
     <style name="ToolbarTitleColor" parent="AppTheme">
         <item name="colorPrimary">@color/result_points</item>
     </style>
+    <style name="button_change" parent="android:Widget.Button">
+        <item name="android:button">@drawable/button_state</item>
+    </style>
+    <style name="checkbox" parent="Theme.AppCompat.Light">
+        <item name="colorControlNormal">#ffffff</item>
+        <item name="colorControlActivated">#ff0000</item>
+    </style>
+    <style name="taskid_dialog" parent="AlertDialog.AppCompat">
+        <item name="android:windowNoTitle">true</item>
+    </style>
 
 </resources>

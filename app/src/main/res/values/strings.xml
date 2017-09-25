@@ -32,5 +32,13 @@
     <string name="error_info_title">故障状态信息</string>
     <string name="info_cancel">取消更改</string>
     <string name="info_sure">确认更改</string>
+    <string name="lift_id">设备编号</string>
+    <string name="submit_history_number">确定</string>
+    <string name="history_title">获取历史数据</string>
+    <string name="history_number">请输入0至255获取数据</string>
+    <string name="store_user_pass">保存用户名和密码</string>
+    <string name="upload_title">上传数据内容</string>
+    <string name="upload_ensure">确定上传</string>
+    <string name="upload_cancel">取消上传</string>
 
 </resources>

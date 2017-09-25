@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_login"
+    android:background="#ccff99"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -61,11 +62,20 @@
                 android:inputType="textPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
+            <CheckBox
+                android:id="@+id/check_store"
+                android:text="@string/store_user_pass"
+                android:theme="@style/checkbox"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
         </android.support.design.widget.TextInputLayout>
+
 
         <Button
             android:id="@+id/login_button"
             android:layout_below="@id/textinputpass"
+            android:background="@drawable/login_button"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:text="@string/login_button"
