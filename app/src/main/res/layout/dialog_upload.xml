@@ -32,12 +32,16 @@
             android:layout_weight="1"
             android:id="@+id/upload_cancel"
             android:text="@string/upload_cancel"
+            android:textColor="#5624ad"
+            android:background="#ffffff"
             android:layout_width="0dp"
             android:layout_height="wrap_content" />
         <Button
             android:layout_weight="1"
             android:id="@+id/upload_ensure"
             android:text="@string/upload_ensure"
+            android:textColor="#239812"
+            android:background="#ffffff"
             android:layout_width="0dp"
             android:layout_height="wrap_content" />
     </LinearLayout>

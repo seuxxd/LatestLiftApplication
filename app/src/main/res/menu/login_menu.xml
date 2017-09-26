@@ -4,7 +4,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/app_usage"
-        android:title="@string/app_usage"
+        android:title="@string/app_state"
         android:orderInCategory="10"
         app:showAsAction="never"/>
     <item

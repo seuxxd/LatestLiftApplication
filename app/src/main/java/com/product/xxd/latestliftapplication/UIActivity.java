@@ -88,6 +88,8 @@ public class UIActivity extends AppCompatActivity {
     private Gson mParamsGson = new Gson();
     private Data mData = new Data();
 //    上传时是否数据齐全的判据
+    private int mTaskID = 0;
+    private int mScanID = 0;
     private int mAllDataNumber = 0;
     private int mRunningInfoNumber = 0;
     private int mErrorStatusNumber = 0;
@@ -166,6 +168,8 @@ public class UIActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 mTaskIDText.setText(list.get(position));
+                mTaskID = 1;
+                checkUploadPossibility();
                 dialog.dismiss();
             }
         });
@@ -509,7 +513,7 @@ public class UIActivity extends AppCompatActivity {
 
     }
     private void checkUploadPossibility(){
-        if (mAllDataNumber + mErrorStatusNumber + mRunningInfoNumber != 3){
+        if (mTaskID + mScanID + mAllDataNumber + mErrorStatusNumber + mRunningInfoNumber != 5){
             mUploadButton.setEnabled(false);
         }
         else {
@@ -530,6 +534,8 @@ public class UIActivity extends AppCompatActivity {
                     Toast.makeText(this, "扫码成功", Toast.LENGTH_SHORT).show();
                     mLiftInfo = data.getStringExtra("result");
                     String str = mLiftId + " : " +mLiftInfo;
+                    mScanID = 1;
+                    checkUploadPossibility();
                     mShowId.setText(str);
                 }
                 else if (resultCode == ConstantCode.SCAN_RESULT_FAILED){
@@ -796,6 +802,15 @@ public class UIActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!BLEService.mIsConnected){
+            mBLEButton.setText(mConnect);
+            mIsConnected = false;
+        }
     }
 
     public static boolean ismIsAllDataButton() {

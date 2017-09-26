@@ -76,6 +76,9 @@ public class LoginActivity extends AppCompatActivity {
 //    当密码为空时显示的字符串
     @BindString(R.string.empty_password)
     String mEmptyPassword;
+//    app_usage
+    @BindString(R.string.app_usage)
+    String mAppUsage;
 
 
     String username;
@@ -141,7 +144,7 @@ public class LoginActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.app_usage:
-                Toast.makeText(this, "APP_USAGE", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, mAppUsage, Toast.LENGTH_LONG).show();
                 break;
             default:
                 break;

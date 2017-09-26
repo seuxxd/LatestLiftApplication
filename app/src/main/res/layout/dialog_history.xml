@@ -2,6 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
+    android:background="#ccffcc"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <TextView
@@ -25,6 +26,7 @@
         <Button
             android:id="@+id/submit_history_number"
             android:text="@string/submit_history_number"
+            android:background="#ffccffcc"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_margin="0dp"

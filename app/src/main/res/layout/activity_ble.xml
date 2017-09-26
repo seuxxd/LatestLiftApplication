@@ -11,6 +11,7 @@
         android:layout_height="wrap_content">
         <Button
             android:id="@+id/btn_search"
+            android:background="@drawable/button_state"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
@@ -19,6 +20,7 @@
             android:textSize="32sp"/>
         <Button
             android:id="@+id/btn_stop"
+            android:background="@drawable/button_state"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"

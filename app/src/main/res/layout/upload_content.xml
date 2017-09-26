@@ -6,6 +6,7 @@
     android:layout_height="match_parent">
     <TextView
         android:id="@+id/upload_key"
+        android:layout_gravity="center"
         android:gravity="center"
         android:layout_weight="1"
         android:layout_width="0dp"

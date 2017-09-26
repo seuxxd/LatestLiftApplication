@@ -68,6 +68,7 @@ public class UploadAdapter extends BaseAdapter {
         }
         viewHolder.mKey.setText(mKeyList.get(position));
         viewHolder.mValue.setText(mValueList.get(position));
+//        viewHolder.mKey.setHeight(viewHolder.mValue.getHeight());
         return convertView;
     }
 }

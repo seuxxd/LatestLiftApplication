@@ -35,11 +35,15 @@
             android:text="@string/info_cancel"
             android:layout_gravity="bottom"
             android:layout_weight="1"
+            android:textColor="#5624ad"
+            android:background="#ffffff"
             android:layout_width="0dp"
             android:layout_height="wrap_content"/>
         <Button
             android:id="@+id/error_info_sure"
             android:text="@string/info_sure"
+            android:textColor="#239812"
+            android:background="#ffffff"
             android:layout_gravity="bottom"
             android:layout_weight="1"
             android:layout_width="0dp"
