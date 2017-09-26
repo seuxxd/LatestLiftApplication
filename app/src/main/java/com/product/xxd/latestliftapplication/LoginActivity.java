@@ -79,6 +79,9 @@ public class LoginActivity extends AppCompatActivity {
 //    app_usage
     @BindString(R.string.app_usage)
     String mAppUsage;
+//    contact_mail
+    @BindString(R.string.contact_mail)
+    String mContactMail;
 
 
     String username;
@@ -144,8 +147,10 @@ public class LoginActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.app_usage:
-                Toast.makeText(this, mAppUsage, Toast.LENGTH_LONG).show();
+                Toast.makeText(this, mAppUsage , Toast.LENGTH_LONG).show();
                 break;
+            case R.id.app_mail:
+                Toast.makeText(this, mContactMail , Toast.LENGTH_SHORT).show();
             default:
                 break;
         }
