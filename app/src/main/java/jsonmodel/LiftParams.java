@@ -17,21 +17,21 @@ public class LiftParams {
     public String[] angle;
     public String[] pal;
     public String[] acc;
-    public String date;
+    /*public String date;*/
 
 
     public LiftParams() {
 
     }
 
-    public void setDate(String date) {
+    /*public void setDate(String date) {
         this.date = date;
     }
 
     public String getDate() {
 
         return date;
-    }
+    }*/
 
     public void setAcc(String[] acc) {
         this.acc = acc;
@@ -146,7 +146,7 @@ public class LiftParams {
                 "pal[2]: "      + pal[2]           + "\n" +
                 "acc[0]: "      + acc[0]           + "\n" +
                 "acc[1]: "      + acc[1]           + "\n" +
-                "acc[2]: "      + acc[2]           + "\n" +
-                "date: "        + date             + "\n" ;
+                "acc[2]: "      + acc[2]           + "\n" /*+
+                "date: "        + date             + "\n" */;
     }
 }

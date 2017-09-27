@@ -129,6 +129,7 @@ public class UIActivity extends AppCompatActivity {
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 try {
                     String str = response.body().string();
+                    Log.i(TAG, "onResponse: " + str);
                     JSONObject object = new JSONObject(str);
                     if (!object.getString("message").equals("查询成功")){
                         Toast.makeText(UIActivity.this, "错误，请重试", Toast.LENGTH_SHORT).show();
@@ -436,7 +437,9 @@ public class UIActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         try {
-                            JSONObject object = new JSONObject(response.body().string());
+                            String res = response.body().string();
+//                            Log.i(TAG, "onResponse: " + res);
+                            JSONObject object = new JSONObject(res);
                             String result = object.getString("message");
                             if (result.equals("添加成功")){
                                 Toast.makeText(UIActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
@@ -613,7 +616,6 @@ public class UIActivity extends AppCompatActivity {
                 case ConstantCode.RUNNING_STATUS_BUTTON_PRESSED:
                     mShowArea.setText("");
                     statusInfoConvert(s);
-                    showRunningStatusDialog();
                     break;
                 case ConstantCode.TEST_BUTTON_PRESSED:
                     mShowArea.setText(ConvertUtils.dexToString(s));
@@ -621,7 +623,6 @@ public class UIActivity extends AppCompatActivity {
                 case ConstantCode.RUNNING_ERROR_BUTTON_PRESSED:
                     mShowArea.setText("");
                     errorInfoConvert(s);
-                    showErrorDialog();
                     break;
                 case ConstantCode.RESET_BUTTON_PRESSED:
                     Toast.makeText(this, "采集器存储数据已清空", Toast.LENGTH_SHORT).show();
@@ -701,10 +702,16 @@ public class UIActivity extends AppCompatActivity {
     //    运行数据处理
     private void statusInfoConvert(String s){
         mRunningInfoNumberValue = RunningStatus.getmRunningInfoNumberValue();
-        for (int i = 29; i < 49; i += 2){
-            int result = ((int) s.charAt(i)) - 48;
-            mRunningInfoNumberValue.set((i - 29) / 2 , result);
-            Log.i(TAG, "statusInfoConvert: " + result);
+        try {
+            for (int i = 29; i < 49; i += 2){
+                int result = ((int) s.charAt(i)) - 48;
+                mRunningInfoNumberValue.set((i - 29) / 2 , result);
+                Log.i(TAG, "statusInfoConvert: " + result);
+            }
+            showRunningStatusDialog();
+        } catch (Exception e) {
+            Toast.makeText(this, "请重启运行监控装置", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
         }
     }
 
@@ -740,10 +747,16 @@ public class UIActivity extends AppCompatActivity {
     private void errorInfoConvert(String s){
         Log.i(TAG, "errorInfoConvert: " + s);
         mErrorInfoNumberValue = ErrorInfo.getmErrorNumberValue();
-        for (int i = 21 ; i < 41 ; i += 2){
-            int temp = ((int) s.charAt(i)) - 48;
-            mErrorInfoNumberValue.set((i - 21) / 2,temp);
-            Log.i(TAG, "errorInfoConvert: " + temp);
+        try {
+            for (int i = 21 ; i < 41 ; i += 2){
+                int temp = ((int) s.charAt(i)) - 48;
+                mErrorInfoNumberValue.set((i - 21) / 2,temp);
+                Log.i(TAG, "errorInfoConvert: " + temp);
+            }
+            showErrorDialog();
+        } catch (Exception e) {
+            Toast.makeText(this, "请重启运行监控装置", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
         }
     }
 
