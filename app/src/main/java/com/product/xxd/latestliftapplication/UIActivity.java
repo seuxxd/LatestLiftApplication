@@ -75,7 +75,7 @@ public class UIActivity extends AppCompatActivity {
 //    判断蓝牙数据解析方式，true是转换成字符串，false是保持字节流行时
     public boolean mIsChangedToString;
 //    判断当前按键类别
-    private int mWhichButton = 0;
+    private static int mWhichButton = 0;
 //    运行信息的value
     private List<Integer> mRunningInfoNumberValue;
 //    运行信息的value字符串表示
@@ -599,8 +599,12 @@ public class UIActivity extends AppCompatActivity {
                 case ConstantCode.DISTANCE_BUTTON_PRESSED:
                     String mDistance = ConvertUtils.dexToString(s);
                     Log.i(TAG, "onEvent: " + mDistance);
-                    mShowArea.setText("测得的距离为："  + "\n" + mDistance);
-                    mLiftParams.setDistance(Double.valueOf(mDistance.split("cm")[0]));
+                    String[] temp4 = mDistance.split("cm");
+                    mShowArea.setText("测得的距离为："  + "\n" +
+                                    temp4[0] + "\n" +
+                                    temp4[1] + "\n" +
+                                    temp4[2]);
+                    mLiftParams.setDis(temp4);
                     break;
                 case ConstantCode.VOICE_BUTTON_PRESSED:
                     String mVoice = ConvertUtils.dexToString(s);
@@ -828,5 +832,8 @@ public class UIActivity extends AppCompatActivity {
 
     public static boolean ismIsAllDataButton() {
         return mIsAllDataButton;
+    }
+    public static int isWhichButtonPressed(){
+        return mWhichButton;
     }
 }

@@ -24,6 +24,8 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.Iterator;
 import java.util.List;
 
+import util.ConstantCode;
+
 import static ble.ConvertUtils.dexToString;
 
 
@@ -208,17 +210,22 @@ public class BluetoothController {
 //            如果小于20，说明本次接收完毕，可以发送
             if (length < 20){
                 EventBus.getDefault().post(mResult);
+                Log.i(TAG, "onCharacteristicChanged:" + length);
                 mResult = "";
             }
 //            如果等于20，还需要分类讨论一下
             else if (length == 20){
-                if (mReadOnce.endsWith("}")){
+                if (mReadOnce.endsWith("}")
+                        &&
+                        UIActivity.isWhichButtonPressed() != ConstantCode.DISTANCE_BUTTON_PRESSED){
                     EventBus.getDefault().post(mResult);
+                    Log.i(TAG, "onCharacteristicChanged: 20de" + length);
                     mResult = "";
                 }
                 else if (content[19] == 'd'){
 					if (!UIActivity.ismIsAllDataButton()){
-						EventBus.getDefault().post(mResult);
+                        Log.i(TAG, "onCharacteristicChanged: d结尾" + mResult);
+                        EventBus.getDefault().post(mResult);
 						mResult = "";
 					}
                 }

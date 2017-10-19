@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">LatestLiftApplication</string>
+    <string name="app_name">电梯数据检测应用</string>
     <string name="scan">扫描条形码</string>
     <string name="ble">连接蓝牙</string>
     <string name="disconnect">断开连接</string>
