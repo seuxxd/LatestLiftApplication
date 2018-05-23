@@ -10,7 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class InternetConnectionUtil {
     public static Retrofit getRetrofit(){
         Retrofit mRetrofit = new Retrofit.Builder()
-                .baseUrl("http://123.206.208.114:8888/Elevator/api/")
+                .baseUrl("http://47.93.227.21:8080/Elevator/api/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         return mRetrofit;

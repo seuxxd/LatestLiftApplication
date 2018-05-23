@@ -1,6 +1,7 @@
 package com.product.xxd.latestliftapplication;
 
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -27,7 +28,9 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import adapter.ErrorAdapter;
 import adapter.StatusAdapter;
@@ -502,7 +505,6 @@ public class UIActivity extends AppCompatActivity {
         mController.write(command);
         Log.i(TAG, "sendCommand: ");
     }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -514,6 +516,7 @@ public class UIActivity extends AppCompatActivity {
         EventBus.getDefault().register(this);
         checkUploadPossibility();
 
+        mUploadButton.setEnabled(true);
     }
     private void checkUploadPossibility(){
         if (mTaskID + mScanID + mAllDataNumber + mErrorStatusNumber + mRunningInfoNumber != 5){

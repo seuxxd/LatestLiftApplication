@@ -118,7 +118,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
-
+                    Toast.makeText(LoginActivity.this, "错误信息： " + t.toString(), Toast.LENGTH_SHORT).show();
                 }
             });
         }
