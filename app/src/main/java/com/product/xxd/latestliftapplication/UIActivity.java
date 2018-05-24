@@ -516,7 +516,6 @@ public class UIActivity extends AppCompatActivity {
         EventBus.getDefault().register(this);
         checkUploadPossibility();
 
-        mUploadButton.setEnabled(true);
     }
     private void checkUploadPossibility(){
         if (mTaskID + mScanID + mAllDataNumber + mErrorStatusNumber + mRunningInfoNumber != 5){
